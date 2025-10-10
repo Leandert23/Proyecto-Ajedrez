@@ -1,23 +1,25 @@
 import tkinter as tk
-def interfazDatos():
+def interfazJugadores():
     ventana = tk.Tk()
-    ventana.title("Datos")
+    ventana.title("Jugadores")
     ventana.geometry("1000x600")
     ventana.configure(bg="lightgray")
 
+
+
     ventana.mainloop()
 
-def rankingGeneral():
+def añadirJugador():
     pass
 
-def rankingFemenino():
+def editarJugador():
     pass
 
-def filtarRanking():
+def borrarJugador():
     pass
 
-def listaTorneos():
+def filtarJugador():
     pass
 
-def Medallas():
+def  listaJugadores():
     pass

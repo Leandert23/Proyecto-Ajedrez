@@ -1,0 +1,22 @@
+CREATE TABLE: Crear tabla 
+CREATE TABLE [Nombre] ([Nombre] [Tipo])
+
+INSERT INTO: Insertar fila
+INSERT INTO [Tabla] ([Columna]) VALUES ([Valores]))
+
+SELECT: Seleccionar y mostrar datos
+SELECT * FROM [Tabla] (Todos las columnas de la tabla)
+SELECT [Columna] FROM [Tabla] (Datos de columnas en especifico)
+SELECT [Columna] FROM [Tabla] WHERE [Condición] (Muestra filas marcadas con la condición)
+SELECT [Columna] FROM [Tabla] ORDER BY [Columna] (Ordena según el tipo de la columna seleccionada, se puede usar DESC)
+
+UPDATE: Actualizar/editar datos
+UPDATE [Tabla] set [Columna = Nuevo valor] (Para cambiar el valor de toda esa columna)
+UPDATE [Tabla] set [Columna = Nuevo valor] WHERE [Columna = Valor] (Para cambiar filas en específico)
+
+DELETE FROM: Eliminar filas
+DELETE FROM [Tabla] (Elimina toda las filas de la tabla)
+DELETE FROM [Tabla] WHERE [Columna = Valor] (Elimina la columna de la condición)
+
+DROP TABLE: Elimina una tabla entera
+DROP TABLE [Tabla]
