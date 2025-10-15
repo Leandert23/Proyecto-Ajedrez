@@ -1,10 +1,11 @@
 import sqlite3 as sql
 
-def agregarDatosJugadores(nombre, apellido, género, facultad, elo, invitado, torneos):
+def agregarDatosJugadores(nombre, apellido, género, facultad, elo, victorias, torneos, invitado):
     try:
         conexion = sql.connect("ajedrez.db")
         cursor = conexion.cursor()
-        instrucccion = f"INSERT INTO Jugadores VALUES('{nombre}', '{apellido}', '{género}', '{facultad}', {elo}, '{invitado}', {torneos})"
+        instrucccion = f"INSERT INTO Jugadores VALUES('{nombre}', '{apellido}', '{género}', '{facultad}', {elo}, {victorias}, '{invitado}', {torneos})"
+        print(instrucccion)
         cursor.execute(instrucccion)
         conexion.commit()
         conexion.close()
@@ -22,13 +23,12 @@ def agregarDatosMedallas(nombre, apellido, medallas, torneos):
     except Exception as e:
         print("Error al agregar datos (Medallas):", e)
 
-def crearTablaAntesTorneo(nombre, fecha):
+def crearTablaAntesTorneo(nombre, fecha, participantes, invitados, descripcion):
     try:
         conexion = sql.connect("ajedrez.db")
         cursor = conexion.cursor()
-        nombreTorneo = f"{nombre}_{fecha}".replace(" ", "")
-        print(nombreTorneo)
-        instrucccion = f"""CREATE TABLE {nombreTorneo}(
+        nombreTorneo = f"{nombre}_{fecha}_{participantes}_{invitados}_{descripcion}".replace("-", "/")
+        instrucccion = f"""CREATE TABLE '{nombreTorneo}'(
                                                     Nombre TEXT,
                                                     Apellido TEXT,
                                                     Elo INTEGER,
@@ -44,11 +44,14 @@ def crearTablaAntesTorneo(nombre, fecha):
         conexion.close()
     except Exception as e:
         print("Error al agregar datos (crearTablaAntesTorneo):", e)
+        print(nombreTorneo)
+        return True
+    return nombreTorneo
 
 def agregarDatosAntesTorneo(nombre, apellido, elo, victorias, tablas, derrotas, puntos, desempate1, desempate2):
     try:
         conexion = sql.connect("ajedrez.db")
-        cursor = conexion.cursor()  #Nombre de torneo
+        cursor = conexion.cursor()
         instrucccion = f"INSERT INTO antesTorneo VALUES('{nombre}', '{apellido}', {elo}, {victorias}, {tablas}, {derrotas}, {puntos}, {desempate1}, {desempate2})"
         cursor.execute(instrucccion)
         conexion.commit()

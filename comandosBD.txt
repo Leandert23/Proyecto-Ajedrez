@@ -2,7 +2,7 @@ CREATE TABLE: Crear tabla
 CREATE TABLE [Nombre] ([Nombre] [Tipo])
 
 INSERT INTO: Insertar fila
-INSERT INTO [Tabla] ([Columna]) VALUES ([Valores]))
+INSERT INTO [Tabla] ([Columna]) VALUES ([Valores])
 
 SELECT: Seleccionar y mostrar datos
 SELECT * FROM [Tabla] (Todos las columnas de la tabla)
@@ -20,3 +20,6 @@ DELETE FROM [Tabla] WHERE [Columna = Valor] (Elimina la columna de la condición
 
 DROP TABLE: Elimina una tabla entera
 DROP TABLE [Tabla]
+
+Ordenar jugadores por Elo y Victorias como Desempate
+SELECT * FROM Jugadores ORDER By Elo, Victorias DESC
