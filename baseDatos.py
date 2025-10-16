@@ -1,5 +1,18 @@
 import sqlite3 as sql
 
+def consultarDatosJugadores():
+    try:
+        conexion = sql.connect("ajedrez.db")
+        cursor = conexion.cursor()
+        instrucccion = "SELECT * FROM Jugadores"
+        cursor.execute(instrucccion)
+        resultados = cursor.fetchall()
+        return resultados
+    except Exception as e:
+        print("Error al consultar datos (Jugadores):", e)
+    finally:
+        conexion.close()
+
 def agregarDatosJugadores(nombre, apellido, género, facultad, elo, victorias, torneos, invitado):
     try:
         conexion = sql.connect("ajedrez.db")
@@ -8,9 +21,10 @@ def agregarDatosJugadores(nombre, apellido, género, facultad, elo, victorias, t
         print(instrucccion)
         cursor.execute(instrucccion)
         conexion.commit()
-        conexion.close()
     except Exception as e:
         print("Error al agregar datos (Jugadores):", e)
+    finally:
+        conexion.close()
 
 def agregarDatosMedallas(nombre, apellido, medallas, torneos):
     try:
@@ -19,9 +33,10 @@ def agregarDatosMedallas(nombre, apellido, medallas, torneos):
         instrucccion = f"INSERT INTO Medallas VALUES('{nombre}', '{apellido}', {medallas}, {torneos})"
         cursor.execute(instrucccion)
         conexion.commit()
-        conexion.close()
     except Exception as e:
         print("Error al agregar datos (Medallas):", e)
+    finally:
+        conexion.close()
 
 def crearTablaAntesTorneo(nombre, fecha, participantes, invitados, descripcion):
     try:
@@ -41,23 +56,24 @@ def crearTablaAntesTorneo(nombre, fecha, participantes, invitados, descripcion):
                                                     )"""
         cursor.execute(instrucccion)
         conexion.commit()
-        conexion.close()
+        return nombreTorneo
     except Exception as e:
         print("Error al agregar datos (crearTablaAntesTorneo):", e)
-        print(nombreTorneo)
         return True
-    return nombreTorneo
+    finally:
+        conexion.close()
 
 def agregarDatosAntesTorneo(nombre, apellido, elo, victorias, tablas, derrotas, puntos, desempate1, desempate2):
     try:
         conexion = sql.connect("ajedrez.db")
         cursor = conexion.cursor()
-        instrucccion = f"INSERT INTO antesTorneo VALUES('{nombre}', '{apellido}', {elo}, {victorias}, {tablas}, {derrotas}, {puntos}, {desempate1}, {desempate2})"
-        cursor.execute(instrucccion)
+        instrucccion = f"INSERT INTO antesTorneo VALUES(?,?,?,?,?,?,?,?,?)"
+        cursor.execute(instrucccion, (nombre, apellido, elo, victorias, tablas, derrotas, puntos, desempate1, desempate2))
         conexion.commit()
-        conexion.close()
     except Exception as e:
         print("Error al agregar datos (agregarDatos):", e)
+    finally:
+        conexion.close()
 
 def agregarDatosRankingGeneral(nombre, apellido, facultad, victorias, elo):
     try:
@@ -66,7 +82,9 @@ def agregarDatosRankingGeneral(nombre, apellido, facultad, victorias, elo):
         instrucccion = f"INSERT INTO rankingGeneral VALUES('{nombre}', '{apellido}', '{facultad}', {victorias}, {elo})"
         cursor.execute(instrucccion)
         conexion.commit()
-        conexion.close()
     except Exception as e:
         print("Error al agregar datos (agregarDatosRankingGeneral):", e)
+    finally:
+        conexion.close()
+
 

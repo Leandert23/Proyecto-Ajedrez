@@ -4,12 +4,15 @@ import torneo, datos, jugadores
 
 ventana = tk.Tk()
 ventana.title("Ajedrez")
-ventana.geometry("500x300")
+anchoVentana = 500
+altoVentana = 300
+x = (ventana.winfo_screenwidth() - anchoVentana)//2
+y = (ventana.winfo_screenheight() - altoVentana)//2
+ventana.geometry(f"{anchoVentana}x{altoVentana}+{x}+{y}")
 ventana.configure(bg="lightgray")
-
 def interfazTorneo():
     ventana.destroy()
-    torneo.interfazTorneo()
+    torneo.interfazTorneo1()
 
 def interfazJugadores():
     ventana.destroy()
