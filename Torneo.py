@@ -167,9 +167,6 @@ def interfazTorneo2(nombre):
     tabla.column("Puntos", anchor=tk.CENTER, width=60)
     tabla.column("Desempates", anchor=tk.CENTER, width=100)
 
-    #if len(nombreCompleto) > 20:
-        #nombreCompleto = nombreCompleto[:15] + "..."
-    #tabla.heading("Posición", text="Posición")
     tabla.heading("Nombre y Apellido", text="Nombre y Apellido")
     tabla.heading("Elo", text="Elo")
     tabla.heading("Victorias", text="Victorias")

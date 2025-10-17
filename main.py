@@ -1,7 +1,6 @@
 import tkinter as tk
 import torneo, datos, jugadores
 
-
 ventana = tk.Tk()
 ventana.title("Ajedrez")
 anchoVentana = 500

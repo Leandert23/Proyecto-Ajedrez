@@ -65,11 +65,9 @@ def interfazJugadores1():
 
     botonCrearJugador = tk.Button(ventana, text="Crear Jugador", font=15, command=lambda:(ventana.destroy(), interfazJugadores2()))
     botonCrearJugador.pack()
-    
 
     cargarJugadores()
     ventana.mainloop()
-
 
 def interfazJugadores2():
     #Funciones

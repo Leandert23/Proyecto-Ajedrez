@@ -27,7 +27,6 @@ def agregarDatosJugadores(nombreCompleto, género, facultad, elo, victorias, tor
     finally:
         conexion.close()
         
-
 def agregarDatosMedallas(nombre, apellido, medallas, torneos):
     try:
         conexion = sql.connect("ajedrez.db")
