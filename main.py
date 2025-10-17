@@ -16,7 +16,7 @@ def interfazTorneo():
 
 def interfazJugadores():
     ventana.destroy()
-    jugadores.interfazJugadores()
+    jugadores.interfazJugadores1()
 
 def interfazDatos():
     ventana.destroy()

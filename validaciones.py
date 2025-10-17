@@ -4,14 +4,17 @@ def validarNombre(nombre):
             return False
         return True
 
-def validarParticipantes(participantes):
-    for i in participantes:
+def validarEntero(entero):
+    if entero.strip() == "":
+        return False
+    for i in entero:
         if not i.isnumeric():
             return False
     return True
         
-def validarDescripcion(descripcion):
-    if len(descripcion) > 15:
+def validarTexto(texto):
+    if texto.strip() == "":
+        return False
+    elif len(texto) > 15:
         return False
     return True
-    

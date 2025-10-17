@@ -13,18 +13,20 @@ def consultarDatosJugadores():
     finally:
         conexion.close()
 
-def agregarDatosJugadores(nombre, apellido, género, facultad, elo, victorias, torneos, invitado):
+def agregarDatosJugadores(nombreCompleto, género, facultad, elo, victorias, torneos, invitado):
     try:
         conexion = sql.connect("ajedrez.db")
         cursor = conexion.cursor()
-        instrucccion = f"INSERT INTO Jugadores VALUES('{nombre}', '{apellido}', '{género}', '{facultad}', {elo}, {victorias}, '{invitado}', {torneos})"
-        print(instrucccion)
-        cursor.execute(instrucccion)
+        instrucccion = f"INSERT INTO Jugadores VALUES(?, ?, ?, ?, ?, ?, ?)"
+        cursor.execute(instrucccion, (nombreCompleto, género, facultad, elo, victorias, torneos, invitado))
         conexion.commit()
+        return nombreCompleto
     except Exception as e:
         print("Error al agregar datos (Jugadores):", e)
+        return True
     finally:
         conexion.close()
+        
 
 def agregarDatosMedallas(nombre, apellido, medallas, torneos):
     try:
@@ -38,11 +40,11 @@ def agregarDatosMedallas(nombre, apellido, medallas, torneos):
     finally:
         conexion.close()
 
-def crearTablaAntesTorneo(nombre, fecha, participantes, invitados, descripcion):
+def crearTablaAntesTorneo(nombre, fecha, participantes, rondas, invitados, descripcion):
     try:
         conexion = sql.connect("ajedrez.db")
         cursor = conexion.cursor()
-        nombreTorneo = f"{nombre}_{fecha}_{participantes}_{invitados}_{descripcion}".replace("-", "/")
+        nombreTorneo = f"{nombre}_{fecha}_P{participantes}_R{rondas}_{invitados}_{descripcion}".replace("-", "/")
         instrucccion = f"""CREATE TABLE '{nombreTorneo}'(
                                                     Nombre TEXT,
                                                     Apellido TEXT,
