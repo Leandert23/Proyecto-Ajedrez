@@ -127,15 +127,32 @@ def interfazTorneo1():
         
     ventana.mainloop()
 
-def interfazTorneo2(nombre):
+def interfazTorneo2(nombreTorneo):
     #Funciones
-    def cargarJugadores():
+    def actualizarTabla():
+        labelJugadoresInscritos = tk.Label(ventana, text="!!No hay jugadores inscritos!!", bg="lightgray", font=20)
+        labelJugadoresInscritos.pack(pady=10)
         for dato in tabla.get_children():
             tabla.delete(dato)
+        datos = bd.consultarDatosTorneo(nombreTorneo)
+        if len(datos) > 0:
+            labelJugadoresInscritos.config(text=f"Jugadores inscritos: {len(datos)}")
+        if not datos is None:
+            for registro in datos:
+                
+                nombreCompleto = registro[0]
+                if len(nombreCompleto) > 20:
+                    nombreCompleto = nombreCompleto[:15] + "..."
+                tabla.insert("", tk.END, values=(registro[0], registro[1], registro[2], registro[3], registro[4], registro[5], registro[6], registro[7], f"{registro[8]}, {registro[9]}"))
+
+        if len(datos) > 10:
+            scrollbar = ttk.Scrollbar(frame, orient=tk.VERTICAL, command=tabla.yview)
+            tabla.configure(yscroll=scrollbar.set)
+            scrollbar.grid(row=0, column=10, sticky="ns")
     #Ventana
     ventana = tk.Tk()
     ventana.title("Torneo")
-    anchoVentana = 700
+    anchoVentana = 800
     altoVentana = 450
     x = (ventana.winfo_screenwidth() - anchoVentana)//2
     y = (ventana.winfo_screenheight() - altoVentana)//2
@@ -144,7 +161,7 @@ def interfazTorneo2(nombre):
     ventana.configure(bg="lightgray")
 
     #Widgets
-    labelTitulo = tk.Label(ventana, text=f"{nombre}", font= 20)
+    labelTitulo = tk.Label(ventana, text=f"{nombreTorneo}", font= 20)
     labelTitulo.pack(pady= 10)
 
     frame = tk.Frame(ventana, bd=10, bg="gray", width=500, height=500)
@@ -155,11 +172,13 @@ def interfazTorneo2(nombre):
     estilo = ttk.Style()
     estilo.configure("Treeview.Heading", font= 20)
     estilo.configure("Treeview", font= 15, rowheight=30)
-    tabla = ttk.Treeview(frame, columns=("Nombre y Apellido", "Elo", "Victorias", "Tablas", "Derrotas", "Puntos", "Desempates"),  show="headings")
-    tabla.grid(row=0, column=0, columnspan=8, padx=5, pady=10, sticky="ew")
+    tabla = ttk.Treeview(frame, columns=("Nombre y Apellido", "Genero", "Facultad", "Elo", "Victorias", "Tablas", "Derrotas", "Puntos", "Desempates"),  show="headings")
+    tabla.grid(row=0, column=0, columnspan=9, padx=5, pady=10, sticky="ew")
 
     #tabla.column("Posición", anchor=tk.CENTER, width=70)
     tabla.column("Nombre y Apellido", anchor=tk.CENTER, width=170)
+    tabla.column("Genero", anchor=tk.CENTER, width=70)
+    tabla.column("Facultad", anchor=tk.CENTER, width=100)
     tabla.column("Elo", anchor=tk.CENTER, width=45)
     tabla.column("Victorias", anchor=tk.CENTER, width=70)
     tabla.column("Tablas", anchor=tk.CENTER, width=55)
@@ -168,6 +187,8 @@ def interfazTorneo2(nombre):
     tabla.column("Desempates", anchor=tk.CENTER, width=100)
 
     tabla.heading("Nombre y Apellido", text="Nombre y Apellido")
+    tabla.heading("Genero", text="Genero")
+    tabla.heading("Facultad", text="Facultad")
     tabla.heading("Elo", text="Elo")
     tabla.heading("Victorias", text="Victorias")
     tabla.heading("Tablas", text="Tablas")
@@ -175,13 +196,85 @@ def interfazTorneo2(nombre):
     tabla.heading("Puntos", text="Puntos")
     tabla.heading("Desempates", text="Desempates")
 
-    tabla.insert("", tk.END, values=("Juan Perez", 1500, 3, 1, 0, 3.5, "2.5 / 1.5"))
-
     if len(tabla.get_children()) > 10:
         scrollbar = ttk.Scrollbar(frame, orient=tk.VERTICAL, command=tabla.yview)
         tabla.configure(yscroll=scrollbar.set)
-        scrollbar.grid(row=0, column=8, sticky="ns")
+        scrollbar.grid(row=0, column=10, sticky="ns")
     
+    botonAgregarJugador = tk.Button(ventana, text="Agregar Jugador", font=15, command=lambda:(ventana.destroy(), interfazTorneo3(nombreTorneo)))
+    botonAgregarJugador.pack(padx=10, pady=10, side=tk.RIGHT)
+
+    botonActualizar = tk.Button(ventana, text="Actualizar", font=15, command=lambda:actualizarTabla())
+    botonActualizar.pack(padx=10, pady=10, side=tk.RIGHT)
+
+    actualizarTabla()
+    ventana.mainloop()
+
+def interfazTorneo3(nombreTorneo):
+    #Funciones
+    def filtrarJugadores(evento):
+        datos = bd.consultarDatosJugadores()
+        listaJugadoresFiltrados = []
+        nombreCompletos = []
+        for registro in datos:
+            nombreCompletos.append(registro[0])
+        for nombre in nombreCompletos:
+            if entryBusqueda.get().lower() in nombre.lower():
+                listaJugadoresFiltrados.append(nombre)
+            listaJugadores.delete(0, tk.END)
+            for i in listaJugadoresFiltrados:
+                if len(i) > 20:
+                    i = i[:15] + "..."
+                listaJugadores.insert(tk.END, i)
+    
+    def seleccionarJugador(evento):
+        indice = listaJugadores.curselection()
+        nombreJugador = listaJugadores.get(indice)
+        bd.consultarDatosJugador(nombreJugador, nombreTorneo)
+        ventana.destroy()
+        interfazTorneo2("Julio_2025/10/19_P12_R12_True_12")  
+
+
+            #tabla.insert("", tk.END, values=(nombreCompleto, registro[1], registro[2], registro[3], registro[4], registro[5], registro[6]))
+        
+        #if len(datos) > 10:
+            #scrollbar = ttk.Scrollbar(frame, orient=tk.VERTICAL, command=tabla.yview)
+            #tabla.configure(yscroll=scrollbar.set)
+            #scrollbar.grid(row=0, column=6, sticky="ns")
+
+
+    #Ventana
+    ventana = tk.Tk()
+    ventana.title("Jugadores")
+    anchoVentana = 400
+    altoVentana = 300
+    x = (ventana.winfo_screenwidth() - anchoVentana)//2
+    y = (ventana.winfo_screenheight() - altoVentana)//2
+    ventana.geometry(f"{anchoVentana}x{altoVentana}+{x}+{y}")
+    ventana.resizable(False, False)
+    ventana.configure(bg="lightgray")
+    #ventana.bind("<Escape>", lambda e:(ventana.destroy(), interfazJugadores1()))
+    #Widgets
+    frame = tk.Frame(ventana, bd=10, bg="gray", width=500, height=500)
+    frame.pack_propagate(False)
+    frame.pack()
+    frame.grid_columnconfigure(1, weight=1)    
+        
+    listaJugadores = tk.Listbox(frame)
+    listaJugadores.pack(padx=10, pady=10)
+    listaJugadores.bind("<Double-Button-1>", seleccionarJugador)
+
+    entryBusqueda = tk.Entry(frame, font=20)
+    entryBusqueda.pack(padx=10, pady=10)
+    entryBusqueda.focus()
+    entryBusqueda.bind("<Key>", filtrarJugadores, add="+")
+    entryBusqueda.bind("<BackSpace>", filtrarJugadores)
+    """    def hola(event):
+        print(event.char)
+
+    entryNombre.bind("<Key>", hola)
+    entryFecha = DateEntry(frame, date_pattern='dd-mm-yy', bg="gray", font=20, state="readonly")
+    entryFecha.grid(row=1, column=1, padx=10, pady=10, sticky="ew")"""
 
     ventana.mainloop()
 
@@ -195,8 +288,8 @@ def filtrarTorneos():
     pass
 
 if __name__ == "__main__":
-    interfazTorneo1()
-    #interfazTorneo2("x")
+    #interfazTorneo1()
+    interfazTorneo2("Julio_2025/10/19_P12_R12_True_12")
 
 #5to poder
 #El nombre de la rosa

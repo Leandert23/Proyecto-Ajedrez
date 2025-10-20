@@ -9,6 +9,7 @@ def interfazJugadores1():
     #Funciones
     def cargarJugadores():
         datos = bd.consultarDatosJugadores()
+        labelJugadores.config(text=f"Jugadores:{len(datos)}")
         for registro in datos:
             nombreCompleto = registro[0]
             if len(nombreCompleto) > 20:
@@ -19,13 +20,18 @@ def interfazJugadores1():
             scrollbar = ttk.Scrollbar(frame, orient=tk.VERTICAL, command=tabla.yview)
             tabla.configure(yscroll=scrollbar.set)
             scrollbar.grid(row=0, column=6, sticky="ns")
-            
+    
+    def actualizarLista():
+        print("Actualizando lista de jugadores...")
+        for dato in tabla.get_children():
+            tabla.delete(dato)
+        cargarJugadores()
             
     #Ventana
     ventana = tk.Tk()
     ventana.title("Jugadores")
     anchoVentana = 700
-    altoVentana = 350
+    altoVentana = 400
     x = (ventana.winfo_screenwidth() - anchoVentana)//2
     y = (ventana.winfo_screenheight() - altoVentana)//2
     ventana.geometry(f"{anchoVentana}x{altoVentana}+{x}+{y}")
@@ -62,16 +68,25 @@ def interfazJugadores1():
     tabla.heading("Victorias", text="Victorias")
     tabla.heading("Torneos", text="Torneos")
     tabla.heading("Invitado", text="Invitado")
+    
+    labelJugadores = tk.Label(ventana, text="Jugadores:", bg="lightgray", fg="black")
+    labelJugadores.pack(padx=10, pady=10, side=tk.LEFT)
+
+    botonBuscarJugador = tk.Button(ventana, text="Buscar Jugador", font=15, command=lambda:(ventana.destroy(), interfazJugadores3()))
+    botonBuscarJugador.pack(padx=10, pady=10, side=tk.RIGHT)
 
     botonCrearJugador = tk.Button(ventana, text="Crear Jugador", font=15, command=lambda:(ventana.destroy(), interfazJugadores2()))
-    botonCrearJugador.pack()
+    botonCrearJugador.pack(padx=10, pady=10, side=tk.RIGHT)
+
+
+
 
     cargarJugadores()
     ventana.mainloop()
 
 def interfazJugadores2():
     #Funciones
-    def crearTorneo():
+    def crearJugador():
         if checkValorInvitado.get() == 1:
             invitado = "Si"
         else:
@@ -176,7 +191,10 @@ def interfazJugadores2():
     y = (ventana.winfo_screenheight() - altoVentana)//2
     ventana.geometry(f"{anchoVentana}x{altoVentana}+{x}+{y}")
     ventana.resizable(False, False)
+    ventana.focus_force()
+    ventana.grab_set()
     ventana.configure(bg="lightgray")
+    #ventana.bind("<Escape>", lambda e:(ventana.destroy(), interfazJugadores1()))
 
     #Widgets
     labelTitulo = tk.Label(ventana, text="Agregar Jugador", font= 20)
@@ -240,13 +258,81 @@ def interfazJugadores2():
                                                                     entryNombreCompleto.focus()])
     botonLimpiar.grid(row=8, column=0, padx=10, pady=10, sticky="ew")
 
-    botonAgregar = tk.Button(frame, text="Agregar", font=20,  command=crearTorneo)
+    botonAgregar = tk.Button(frame, text="Agregar", font=20,  command=crearJugador)
     botonAgregar.grid(row=8, column=1, padx=10, pady=10, sticky="ew")
 
     labelError = tk.Label(frame, text="", bg="gray")
     labelError.grid(row=9, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
 
     ventana.mainloop()
+
+def interfazJugadores3():
+    #Funciones
+    def filtrarJugadores(evento):
+        datos = bd.consultarDatosJugadores()
+        listaJugadoresFiltrados = []
+        nombreCompletos = []
+        for registro in datos:
+            nombreCompletos.append(registro[0])
+        for nombre in nombreCompletos:
+            if entryBusqueda.get().lower() in nombre.lower():
+                listaJugadoresFiltrados.append(nombre)
+            listaJugadores.delete(0, tk.END)
+            for i in listaJugadoresFiltrados:
+                listaJugadores.insert(tk.END, i)
+
+
+            #if len(nombreCompleto) > 20:
+                #nombreCompleto = nombreCompleto[:15] + "..."
+            #tabla.insert("", tk.END, values=(nombreCompleto, registro[1], registro[2], registro[3], registro[4], registro[5], registro[6]))
+        
+        #if len(datos) > 10:
+            #scrollbar = ttk.Scrollbar(frame, orient=tk.VERTICAL, command=tabla.yview)
+            #tabla.configure(yscroll=scrollbar.set)
+            #scrollbar.grid(row=0, column=6, sticky="ns")
+
+
+    #Ventana
+    ventana = tk.Tk()
+    ventana.title("Jugadores")
+    anchoVentana = 400
+    altoVentana = 300
+    x = (ventana.winfo_screenwidth() - anchoVentana)//2
+    seleccionarJugador = (ventana.winfo_screenheight() - altoVentana)//2
+    ventana.geometry(f"{anchoVentana}x{altoVentana}+{x}+{seleccionarJugador}")
+    ventana.resizable(False, False)
+    ventana.configure(bg="lightgray")
+    #ventana.bind("<Escape>", lambda e:(ventana.destroy(), interfazJugadores1()))
+    #Widgets
+    frame = tk.Frame(ventana, bd=10, bg="gray", width=500, height=500)
+    frame.pack_propagate(False)
+    frame.pack()
+    frame.grid_columnconfigure(1, weight=1)
+
+    def seleccionarJugador(evento):
+        indice = listaJugadores.curselection()
+        elemento = listaJugadores.get(indice)
+        ventana.destroy()
+        interfazJugadores1()
+        actualizarLista()
+        
+    listaJugadores = tk.Listbox(frame)
+    listaJugadores.pack(padx=10, pady=10)
+    listaJugadores.bind("<Double-Button-1>", seleccionarJugador)
+
+    entryBusqueda = tk.Entry(frame, font=20)
+    entryBusqueda.pack(padx=10, pady=10)
+    entryBusqueda.focus()
+    entryBusqueda.bind("<Key>", filtrarJugadores, add="+")
+    entryBusqueda.bind("<BackSpace>", filtrarJugadores)
+    """    def hola(event):
+        print(event.char)
+
+    entryNombre.bind("<Key>", hola)
+    entryFecha = DateEntry(frame, date_pattern='dd-mm-yy', bg="gray", font=20, state="readonly")
+    entryFecha.grid(row=1, column=1, padx=10, pady=10, sticky="ew")"""
+
+    ventana.mainloop
 def añadirJugador():
     pass
 
