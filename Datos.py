@@ -1,11 +1,10 @@
 import tkinter as tk
-def interfazDatos():
-    ventana = tk.Tk()
-    ventana.title("Datos")
-    ventana.geometry("1000x600")
-    ventana.configure(bg="lightgray")
+def interfazDatos(ventanaMain):
+    ventanaDatos1 = tk.Toplevel(ventanaMain)
+    ventanaDatos1.title("Datos")
+    ventanaDatos1.geometry("1000x600")
+    ventanaDatos1.configure(bg="lightgray")
 
-    ventana.mainloop()
 
 def rankingGeneral():
     pass

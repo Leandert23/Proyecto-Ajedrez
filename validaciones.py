@@ -13,8 +13,13 @@ def validarEntero(entero):
     return True
         
 def validarTexto(texto):
-    if texto.strip() == "":
-        return False
-    elif len(texto) > 15:
+    if len(texto) > 15:
         return False
     return True
+
+def validarFloat(numero):
+    try:
+        numero = float(numero)
+        return True
+    except ValueError:
+        return False

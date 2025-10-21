@@ -5,7 +5,7 @@ from tkcalendar import DateEntry
 from tkinter import ttk
 
 
-def interfazJugadores1():
+def interfazJugadores1(ventanaMain):
     #Funciones
     def cargarJugadores():
         datos = bd.consultarDatosJugadores()
@@ -21,28 +21,31 @@ def interfazJugadores1():
             tabla.configure(yscroll=scrollbar.set)
             scrollbar.grid(row=0, column=6, sticky="ns")
     
-    def actualizarLista():
+    """   def actualizarLista():
         print("Actualizando lista de jugadores...")
         for dato in tabla.get_children():
             tabla.delete(dato)
-        cargarJugadores()
+        cargarJugadores()"""
             
     #Ventana
-    ventana = tk.Tk()
-    ventana.title("Jugadores")
+    ventanaJugadores1 = tk.Toplevel(ventanaMain)
+    ventanaJugadores1.title("Jugadores")
     anchoVentana = 700
     altoVentana = 400
-    x = (ventana.winfo_screenwidth() - anchoVentana)//2
-    y = (ventana.winfo_screenheight() - altoVentana)//2
-    ventana.geometry(f"{anchoVentana}x{altoVentana}+{x}+{y}")
-    ventana.resizable(False, False)
-    ventana.configure(bg="lightgray")
+    x = (ventanaJugadores1.winfo_screenwidth() - anchoVentana)//2
+    y = (ventanaJugadores1.winfo_screenheight() - altoVentana)//2
+    ventanaJugadores1.geometry(f"{anchoVentana}x{altoVentana}+{x}+{y}")
+    ventanaMain.withdraw()
+    ventanaJugadores1.focus_force()
+    ventanaJugadores1.grab_set()
+    ventanaJugadores1.resizable(False, False)
+    ventanaJugadores1.configure(bg="lightgray")
 
     #Widgets
-    labelTitulo = tk.Label(ventana, text=f"Jugadores", font= 20)
+    labelTitulo = tk.Label(ventanaJugadores1, text=f"Jugadores", font= 20)
     labelTitulo.pack(pady= 10)
 
-    frame = tk.Frame(ventana, bd=10, bg="gray", width=500, height=500)
+    frame = tk.Frame(ventanaJugadores1, bd=10, bg="gray", width=500, height=500)
     frame.pack_propagate(False)
     frame.pack()
     frame.grid_columnconfigure(1, weight=1)
@@ -69,22 +72,18 @@ def interfazJugadores1():
     tabla.heading("Torneos", text="Torneos")
     tabla.heading("Invitado", text="Invitado")
     
-    labelJugadores = tk.Label(ventana, text="Jugadores:", bg="lightgray", fg="black")
+    labelJugadores = tk.Label(ventanaJugadores1, text="Jugadores:", bg="lightgray", fg="black", font=15)
     labelJugadores.pack(padx=10, pady=10, side=tk.LEFT)
 
-    botonBuscarJugador = tk.Button(ventana, text="Buscar Jugador", font=15, command=lambda:(ventana.destroy(), interfazJugadores3()))
-    botonBuscarJugador.pack(padx=10, pady=10, side=tk.RIGHT)
+    #botonBuscarJugador = tk.Button(ventanaJugadores1, text="Buscar Jugador", font=15, command=lambda: interfazJugadores3())
+    #botonBuscarJugador.pack(padx=10, pady=10, side=tk.RIGHT)
 
-    botonCrearJugador = tk.Button(ventana, text="Crear Jugador", font=15, command=lambda:(ventana.destroy(), interfazJugadores2()))
+    botonCrearJugador = tk.Button(ventanaJugadores1, text="Crear Jugador", font=15, command=lambda:interfazJugadores2(ventanaMain))
     botonCrearJugador.pack(padx=10, pady=10, side=tk.RIGHT)
 
-
-
-
     cargarJugadores()
-    ventana.mainloop()
 
-def interfazJugadores2():
+def interfazJugadores2(ventanaMain):
     #Funciones
     def crearJugador():
         if checkValorInvitado.get() == 1:
@@ -130,7 +129,7 @@ def interfazJugadores2():
         if vl.validarEntero(entryTorneos.get()):
             torneos = entryTorneos.get()
         else:
-            labelError.config(text="!!El número de tornos debe ser \n un numero entero positivo menor a 99", bg="lightgray", font=10)
+            labelError.config(text="!!El número de torneos debe ser \n un numero entero positivo menor a 99", bg="lightgray", font=10)
             labelError.after(3000, lambda:labelError.config(text="", bg="gray"))
             return
 
@@ -140,7 +139,7 @@ def interfazJugadores2():
             labelError.after(3000, lambda:labelError.config(text="", bg="gray"))
             return
         labelError.config(text=f"!!Jugador creado con exito \n {respuesta}!!", bg="lightgray", font=12)
-        labelError.after(2000, lambda:(ventana.destroy(), interfazJugadores1()))
+        labelError.after(2000, lambda:interfazJugadores1())
 
     def invitado():
         entryElo.config(state=tk.NORMAL)
@@ -183,24 +182,25 @@ def interfazJugadores2():
         entryTorneos.delete(0, tk.END)
 
     #Ventana
-    ventana = tk.Tk()
-    ventana.title("Jugadores")
+    ventanaJugadores2 = tk.Toplevel(ventanaMain)
+    ventanaJugadores2.title("Jugadores")
     anchoVentana = 400
     altoVentana = 500
-    x = (ventana.winfo_screenwidth() - anchoVentana)//2
-    y = (ventana.winfo_screenheight() - altoVentana)//2
-    ventana.geometry(f"{anchoVentana}x{altoVentana}+{x}+{y}")
-    ventana.resizable(False, False)
-    ventana.focus_force()
-    ventana.grab_set()
-    ventana.configure(bg="lightgray")
-    #ventana.bind("<Escape>", lambda e:(ventana.destroy(), interfazJugadores1()))
+    x = (ventanaJugadores2.winfo_screenwidth() - anchoVentana)//2
+    y = (ventanaJugadores2.winfo_screenheight() - altoVentana)//2
+    ventanaJugadores2.geometry(f"{anchoVentana}x{altoVentana}+{x}+{y}")
+    ventanaJugadores2.resizable(False, False)
+    ventanaMain.withdraw()
+    ventanaJugadores2.focus_force()
+    ventanaJugadores2.grab_set()
+    ventanaJugadores2.configure(bg="lightgray")
+    ventanaJugadores2.bind("<Escape>", lambda e:(ventanaJugadores2.destroy(), interfazJugadores1(ventanaMain)))
 
     #Widgets
-    labelTitulo = tk.Label(ventana, text="Agregar Jugador", font= 20)
+    labelTitulo = tk.Label(ventanaJugadores2, text="Agregar Jugador", font= 20)
     labelTitulo.pack(pady= 10)
 
-    frame = tk.Frame(ventana, bd=10, bg="gray", width=500, height=500)
+    frame = tk.Frame(ventanaJugadores2, bd=10, bg="gray", width=500, height=500)
     frame.pack_propagate(False)
     frame.pack()
     frame.grid_columnconfigure(1, weight=1)
@@ -264,8 +264,7 @@ def interfazJugadores2():
     labelError = tk.Label(frame, text="", bg="gray")
     labelError.grid(row=9, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
 
-    ventana.mainloop()
-
+"""
 def interfazJugadores3():
     #Funciones
     def filtrarJugadores(evento):
@@ -302,7 +301,6 @@ def interfazJugadores3():
     ventana.geometry(f"{anchoVentana}x{altoVentana}+{x}+{seleccionarJugador}")
     ventana.resizable(False, False)
     ventana.configure(bg="lightgray")
-    #ventana.bind("<Escape>", lambda e:(ventana.destroy(), interfazJugadores1()))
     #Widgets
     frame = tk.Frame(ventana, bd=10, bg="gray", width=500, height=500)
     frame.pack_propagate(False)
@@ -313,8 +311,7 @@ def interfazJugadores3():
         indice = listaJugadores.curselection()
         elemento = listaJugadores.get(indice)
         ventana.destroy()
-        interfazJugadores1()
-        actualizarLista()
+
         
     listaJugadores = tk.Listbox(frame)
     listaJugadores.pack(padx=10, pady=10)
@@ -324,13 +321,12 @@ def interfazJugadores3():
     entryBusqueda.pack(padx=10, pady=10)
     entryBusqueda.focus()
     entryBusqueda.bind("<Key>", filtrarJugadores, add="+")
-    entryBusqueda.bind("<BackSpace>", filtrarJugadores)
-    """    def hola(event):
+    entryBusqueda.bind("<BackSpace>", filtrarJugadores)    def hola(event):
         print(event.char)
 
     entryNombre.bind("<Key>", hola)
     entryFecha = DateEntry(frame, date_pattern='dd-mm-yy', bg="gray", font=20, state="readonly")
-    entryFecha.grid(row=1, column=1, padx=10, pady=10, sticky="ew")"""
+    entryFecha.grid(row=1, column=1, padx=10, pady=10, sticky="ew")
 
     ventana.mainloop
 def añadirJugador():
@@ -347,6 +343,6 @@ def filtarJugador():
 
 def  listaJugadores():
     pass
+"""
 
-if __name__ == "__main__":
-    interfazJugadores1()
+
