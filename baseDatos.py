@@ -121,6 +121,7 @@ def agregarDatosRankingGeneral(nombre, apellido, facultad, victorias, elo):
     finally:
         conexion.commit()
         conexion.close()
+
 def actualizarJugadorTorneo(nombreTorneo, nombreJugador, victorias, tablas, derrotas, puntos, desempate1, desempate2):
     try:
         conexion = sql.connect("ajedrez.db")
@@ -133,6 +134,18 @@ def actualizarJugadorTorneo(nombreTorneo, nombreJugador, victorias, tablas, derr
         conexion.commit()
         conexion.close()
 
+def actualizarDatosJugador(nombreJugador, genero, facultad, elo, victorias, torneos, invitado):
+    try:
+        conexion = sql.connect("ajedrez.db")
+        cursor = conexion.cursor()
+        instrucccion = f"UPDATE Jugadores SET [Nombre y Apellido] = '{nombreJugador}', Genero = '{genero}', Facultad = '{facultad}', Elo = {elo}, Victorias = {victorias}, Torneos = {torneos}, Invitado = '{invitado}' Where [Nombre y Apellido] = '{nombreJugador}'"
+        cursor.execute(instrucccion)
+    except Exception as e:
+        print("Error al actualizar datos (actualizarDatosJugador):", e)
+    finally:
+        conexion.commit()
+        conexion.close()
+
 def eliminarJugadorTorneo(nombreTorneo, nombreCompleto):
     try:
         conexion = sql.connect("ajedrez.db")
@@ -141,6 +154,18 @@ def eliminarJugadorTorneo(nombreTorneo, nombreCompleto):
         cursor.execute(instrucccion)
     except Exception as e:
         print("Error al eliminar datos (eliminarJugadorTorneo):", e)
+    finally:
+        conexion.commit()
+        conexion.close()
+
+def eliminarDatosJugador(nombreCompleto):
+    try:
+        conexion = sql.connect("ajedrez.db")
+        cursor = conexion.cursor()
+        instrucccion = f"DELETE FROM Jugadores WHERE [Nombre y Apellido] = '{nombreCompleto}'"
+        cursor.execute(instrucccion)
+    except Exception as e:
+        print("Error al eliminar datos (eliminarDatosJugador):", e)
     finally:
         conexion.commit()
         conexion.close()

@@ -148,7 +148,6 @@ def interfazTorneo2(ventanaMain, nombreTorneo, rondas):
         fila = tabla.identify_row(event.y)
         if fila:
             menu.tk_popup(event.x_root, event.y_root)
-
     
     def editarFila():
         fila = tabla.selection()
@@ -163,6 +162,7 @@ def interfazTorneo2(ventanaMain, nombreTorneo, rondas):
         if respuesta:
             tabla.delete(item)
             bd.eliminarJugadorTorneo(nombreTorneo, valores[0])
+            actualizarTabla()
 
     #Ventana
     ventanaTorneo2 = tk.Toplevel(ventanaMain)

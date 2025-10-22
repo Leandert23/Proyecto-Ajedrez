@@ -23,3 +23,10 @@ def validarFloat(numero):
         return True
     except ValueError:
         return False
+    
+def validarEntero2(numero):
+    try:
+        numero = int(numero)
+        return str(numero)
+    except ValueError:
+        return 0
