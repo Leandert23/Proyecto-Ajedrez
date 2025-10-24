@@ -1,8 +1,10 @@
 def validarNombre(nombre):
-    for i in nombre:
-        if not i.isalpha():
+    for letra in nombre:
+        if letra == " ":
+            continue 
+        if not letra.isalpha():
             return False
-        return True
+    return True
 
 def validarEntero(entero):
     if entero.strip() == "":

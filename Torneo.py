@@ -136,9 +136,36 @@ def interfazTorneo2(ventanaMain, nombreTorneo, rondas):
         datos = bd.consultarDatosTorneo(nombreTorneo)
         if len(datos) > 0:
             labelJugadoresInscritos.config(text=f"Jugadores inscritos: {len(datos)}")
+        else:
+            return
+    
         if not datos is None:
             for registro in datos:
-                tabla.insert("", tk.END, values=(registro[0], registro[1], registro[2], registro[3], registro[4], registro[5], registro[6], registro[7], f"{registro[8]}  {registro[9]}"))
+                tag = ""
+                if registro[2] == "Ingeniería":
+                    tag = "Ingeniería"
+                elif registro[2] == "Sociales":
+                    tag = "Sociales"
+                elif registro[2] == "Arquitectura":
+                    tag = "Arquitectura"
+                elif registro[2] == "Derecho":
+                    tag = "Derecho"
+                elif registro[2] == "Odontología":
+                    tag = "Odontología"
+                elif registro[2] == "Invitado":
+                    tag = "Invitado"
+                else:
+                    tag = "UJAP"
+                tabla.tag_configure("Ingeniería", background="#00008B", foreground="#FFFFFF")
+                tabla.tag_configure("Sociales", background="#A52A2A", foreground="#FFFFFF")
+                tabla.tag_configure("Arquitectura", background="#402169", foreground="#FFFFFF")
+                tabla.tag_configure("Derecho", background="#000000", foreground="#FFFFFF")
+                tabla.tag_configure("Odontología", background="#888888", foreground="#000000")
+                tabla.tag_configure("Invitado", background="#73bf00", foreground="#FFFFFF")
+                tabla.tag_configure("UJAP", background="#E54A27", foreground="#FFFFFF")
+                
+                
+                tabla.insert("", tk.END, values=(registro[0], registro[1], registro[2], registro[3], registro[4], registro[5], registro[6], registro[7], (f"{registro[8]}  {registro[9]}")), tags=(tag))
         if len(datos) > 10:
             scrollbar = ttk.Scrollbar(frame, orient=tk.VERTICAL, command=tabla.yview)
             tabla.configure(yscroll=scrollbar.set)
@@ -164,6 +191,10 @@ def interfazTorneo2(ventanaMain, nombreTorneo, rondas):
             bd.eliminarJugadorTorneo(nombreTorneo, valores[0])
             actualizarTabla()
 
+    def desseleccionarFila(evento):
+        for fila in tabla.selection():
+            tabla.selection_remove(fila)
+
     #Ventana
     ventanaTorneo2 = tk.Toplevel(ventanaMain)
     ventanaTorneo2.title("Torneo")
@@ -177,6 +208,7 @@ def interfazTorneo2(ventanaMain, nombreTorneo, rondas):
     ventanaTorneo2.grab_set()
     ventanaTorneo2.resizable(False, False)
     ventanaTorneo2.configure(bg="lightgray")
+    ventanaTorneo2.bind("<Double-Button-1>", desseleccionarFila)
 
     #Widgets
     labelTitulo = tk.Label(ventanaTorneo2, text=f"{nombreTorneo}", font= 20)
@@ -194,16 +226,15 @@ def interfazTorneo2(ventanaMain, nombreTorneo, rondas):
     tabla.grid(row=0, column=0, columnspan=9, padx=5, pady=10, sticky="ew")
     tabla.bind("<Button-3>", menu)
 
-    #tabla.column("Posición", anchor=tk.CENTER, width=70)
     tabla.column("Nombre y Apellido", anchor=tk.CENTER, width=200)
     tabla.column("Genero", anchor=tk.CENTER, width=60)
-    tabla.column("Facultad", anchor=tk.CENTER, width=85)
+    tabla.column("Facultad", anchor=tk.CENTER, width=95)
     tabla.column("Elo", anchor=tk.CENTER, width=45)
     tabla.column("Victorias", anchor=tk.CENTER, width=70)
     tabla.column("Tablas", anchor=tk.CENTER, width=55)
     tabla.column("Derrotas", anchor=tk.CENTER, width=70)
     tabla.column("Puntos", anchor=tk.CENTER, width=60)
-    tabla.column("Desempates", anchor=tk.CENTER, width=120)
+    tabla.column("Desempates", anchor=tk.CENTER, width=110)
 
     tabla.heading("Nombre y Apellido", text="Nombre y Apellido")
     tabla.heading("Genero", text="Genero")
@@ -243,8 +274,6 @@ def interfazTorneo3(ventanaMain, nombreTorneo, rondas):
                 listaJugadoresFiltrados.append(nombre)
         listaJugadores.delete(0, tk.END)
         for jugador in listaJugadoresFiltrados:
-            if len(jugador) > 20:
-                jugador = jugador[:20] + "..."
             listaJugadores.insert(tk.END, jugador)
 
         if len(datos) > 10:
@@ -258,7 +287,6 @@ def interfazTorneo3(ventanaMain, nombreTorneo, rondas):
         bd.consultarDatosJugador(nombreJugador, nombreTorneo)
         ventanaTorneo3.destroy()
         interfazTorneo2(ventanaMain, nombreTorneo, rondas)  
-
 
     #Ventana
     ventanaTorneo3 = tk.Toplevel(ventanaMain)
@@ -282,7 +310,7 @@ def interfazTorneo3(ventanaMain, nombreTorneo, rondas):
     frame.pack()
     frame.grid_columnconfigure(1, weight=1)   
         
-    listaJugadores = tk.Listbox(frame, width=15, height=10, font=20)
+    listaJugadores = tk.Listbox(frame, width=20, height=10, font=20)
     listaJugadores.grid(row=0, column=0)
     x = listaJugadores.bind("<Double-Button-1>", seleccionarJugador)
 
@@ -349,46 +377,6 @@ def interfazTorneo4(ventanaMain, nombreTorneo, nombreJugador, vict, tabl, derro,
         bd.actualizarJugadorTorneo(nombreTorneo, nombreJugador, victorias, tablas, derrotas, puntos, round(float(desempate1),2), round(float(desempate2),2))
         ventanaTorneo4.destroy()
         interfazTorneo2(ventanaMain, nombreTorneo, rondas)
-
-    def invitado():
-        entryElo.config(state=tk.NORMAL)
-        entryElo.delete(0, tk.END)
-        entryVictorias.config(state=tk.NORMAL)
-        entryVictorias.delete(0, tk.END)
-        entryTorneos.config(state=tk.NORMAL)
-        entryTorneos.delete(0, tk.END)
-        if checkValorInvitado.get() == 1:
-            checkValorNuevo.set(0)
-            entryFacultad.insert(0, "Invitado")
-            entryFacultad.config(state=tk.DISABLED)
-            entryElo.insert(0, "1600")
-            entryElo.config(state=tk.DISABLED)
-            return
-        entryFacultad.config(state=tk.NORMAL)
-        entryFacultad.delete(0, tk.END)
-        entryElo.config(state=tk.NORMAL)  
-        entryElo.delete(0, tk.END)
-    
-    def nuevoJugador():
-        entryFacultad.config(state=tk.NORMAL)
-        entryFacultad.delete(0, tk.END)
-        entryElo.config(state=tk.NORMAL)  
-        entryElo.delete(0, tk.END)
-        if checkValorNuevo.get() == 1:
-            checkValorInvitado.set(0)
-            entryElo.insert(0, "1500")
-            entryElo.config(state=tk.DISABLED)
-            entryVictorias.insert(0, "0")
-            entryVictorias.config(state=tk.DISABLED)
-            entryTorneos.insert(0, "0")
-            entryTorneos.config(state=tk.DISABLED)
-            return
-        entryElo.config(state=tk.NORMAL)
-        entryElo.delete(0, tk.END)
-        entryVictorias.config(state=tk.NORMAL)
-        entryVictorias.delete(0, tk.END)
-        entryTorneos.config(state=tk.NORMAL)
-        entryTorneos.delete(0, tk.END)
 
     #Ventana
     ventanaTorneo4 = tk.Toplevel(ventanaMain)

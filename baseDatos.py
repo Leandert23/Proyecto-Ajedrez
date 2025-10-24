@@ -134,11 +134,11 @@ def actualizarJugadorTorneo(nombreTorneo, nombreJugador, victorias, tablas, derr
         conexion.commit()
         conexion.close()
 
-def actualizarDatosJugador(nombreJugador, genero, facultad, elo, victorias, torneos, invitado):
+def actualizarDatosJugador(nombreJugador, nombreCompleto, genero, facultad, elo, victorias, torneos, medallas):
     try:
         conexion = sql.connect("ajedrez.db")
         cursor = conexion.cursor()
-        instrucccion = f"UPDATE Jugadores SET [Nombre y Apellido] = '{nombreJugador}', Genero = '{genero}', Facultad = '{facultad}', Elo = {elo}, Victorias = {victorias}, Torneos = {torneos}, Invitado = '{invitado}' Where [Nombre y Apellido] = '{nombreJugador}'"
+        instrucccion = f"UPDATE Jugadores SET [Nombre y Apellido] = '{nombreCompleto}', Genero = '{genero}', Facultad = '{facultad}', Elo = {elo}, Victorias = {victorias}, Torneos = {torneos}, Medallas = {medallas} Where [Nombre y Apellido] = '{nombreJugador}'"
         cursor.execute(instrucccion)
     except Exception as e:
         print("Error al actualizar datos (actualizarDatosJugador):", e)
