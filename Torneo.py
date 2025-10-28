@@ -48,9 +48,19 @@ def interfazTorneo1(ventanaMain):
             labelError.config(text="!!Ya existe un torneo con estos datos \n por favor ingrese uno nuevo!!", bg="lightgray", font=12)
             labelError.after(3000, lambda:labelError.config(text="", bg="gray"))
             return
-        labelError.config(text=f"!!Torneo creado con exito \n {respuesta}!!", bg="lightgray", font=12)
-        labelError.after(2000, lambda:(ventanaTorneo1.destroy(), interfazTorneo2(ventanaMain, respuesta, rondas)))
+        labelError.config(text=f"!!Torneo creado con exito \n {nombre}!!", bg="lightgray", font=12)
+        datosTorneo = (nombre, fecha, participantes, rondas, invitados, descripcion)
+        labelError.after(2000, lambda:(ventanaTorneo1.destroy(), interfazTorneo2(ventanaMain, respuesta, datosTorneo)))
 
+    def limpiar():
+        entryNombre.delete(0, tk.END)
+        entryParticipantes.delete(0, tk.END)
+        entryFecha.config(state="normal")
+        entryFecha.delete(0, tk.END)
+        entryFecha.config(state="readonly")
+        checkInvitados.deselect()
+        entryDescripcion.delete(0, tk.END)
+        entryNombre.focus()
     #Ventana
     ventanaTorneo1 = tk.Toplevel(ventanaMain)
     ventanaTorneo1.title("Torneo")
@@ -112,14 +122,7 @@ def interfazTorneo1(ventanaMain):
     entryDescripcion = tk.Entry(frame, font=20)
     entryDescripcion.grid(row=5, column=1, padx=10, pady=10, sticky="ew")
 
-    botonLimpiar = tk.Button(frame, text="Limpiar", font=20, command=lambda: [entryNombre.delete(0, tk.END), 
-                                                                     entryParticipantes.delete(0, tk.END), 
-                                                                     entryFecha.config(state="normal"),
-                                                                     entryFecha.delete(0, tk.END), 
-                                                                     entryFecha.config(state="readonly"),
-                                                                     checkInvitados.deselect(), 
-                                                                     entryDescripcion.delete(0, tk.END),
-                                                                     entryNombre.focus()])
+    botonLimpiar = tk.Button(frame, text="Limpiar", font=20, command=limpiar)
     botonLimpiar.grid(row=6, column=0, padx=10, pady=10, sticky="ew")
 
     botonCrear = tk.Button(frame, text="Crear", font=20,  command=crearTorneo)
@@ -128,17 +131,18 @@ def interfazTorneo1(ventanaMain):
     labelError = tk.Label(frame, text="", bg="gray")
     labelError.grid(row=7, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
 
-def interfazTorneo2(ventanaMain, nombreTorneo, rondas):
+def interfazTorneo2(ventanaMain, nombreTorneo, datosTorneo):
     #Funciones
     def actualizarTabla():
+        global jugadoresInscritos, invitados
         for dato in tabla.get_children():
             tabla.delete(dato)
-        datos = bd.consultarDatosTorneo(nombreTorneo)
+        datos = bd.consultarDatosAntesTorneo(nombreTorneo)
         if len(datos) > 0:
             labelJugadoresInscritos.config(text=f"Jugadores inscritos: {len(datos)}")
         else:
             return
-    
+        
         if not datos is None:
             for registro in datos:
                 tag = ""
@@ -164,8 +168,8 @@ def interfazTorneo2(ventanaMain, nombreTorneo, rondas):
                 tabla.tag_configure("Invitado", background="#73bf00", foreground="#FFFFFF")
                 tabla.tag_configure("UJAP", background="#E54A27", foreground="#FFFFFF")
                 
-                
                 tabla.insert("", tk.END, values=(registro[0], registro[1], registro[2], registro[3], registro[4], registro[5], registro[6], registro[7], (f"{registro[8]}  {registro[9]}")), tags=(tag))
+                
         if len(datos) > 10:
             scrollbar = ttk.Scrollbar(frame, orient=tk.VERTICAL, command=tabla.yview)
             tabla.configure(yscroll=scrollbar.set)
@@ -180,7 +184,7 @@ def interfazTorneo2(ventanaMain, nombreTorneo, rondas):
         fila = tabla.selection()
         datos = tabla.item(fila, 'values')
         ventanaTorneo2.destroy()
-        interfazTorneo4(ventanaMain, nombreTorneo, datos[0], datos[4], datos[5], datos[6], datos[8], rondas)
+        interfazTorneo4(ventanaMain, nombreTorneo, datos[0], datos[4], datos[5], datos[6], datos[8], datosTorneo)
 
     def borrarFila():
         item = tabla.selection()
@@ -188,17 +192,52 @@ def interfazTorneo2(ventanaMain, nombreTorneo, rondas):
         respuesta = messagebox.askyesno("Borrar", f"¿Estás seguro de borrar a {valores[0]}?")
         if respuesta:
             tabla.delete(item)
-            bd.eliminarJugadorTorneo(nombreTorneo, valores[0])
+            bd.eliminarJugadorTorneo(nombreTorneo, valores[0]) 
             actualizarTabla()
 
     def desseleccionarFila(evento):
         for fila in tabla.selection():
             tabla.selection_remove(fila)
 
+    def cargarTorneo():
+        jugadoresInscritos = []
+        estadisticasJugadores = []
+        invitado = False
+        diferenciaElo = 0
+        for fila in tabla.get_children():
+            valores = tabla.item(fila, 'values')
+            datos = valores[0], valores[2]
+            estadisticas = diferenciaElo, valores[4],
+            desempates = valores[8].split("  ")
+            desempate = valores[7], desempates[0], desempates[1]
+            jugadoresInscritos.append(datos)
+            estadisticasJugadores.append(estadisticas)
+
+        respuesta = messagebox.askyesno("Cargar", "¿Estás seguro de cargar el torneo? \n ¡!Una vez cargado no se podrá editar el torneo!!")
+        if respuesta:
+            if len(jugadoresInscritos) != int(datosTorneo[2]):
+                messagebox.showerror("Error", f"!!Debe haber {datosTorneo[2]} jugadores \n inscritos para cargar el torneo!!")
+                return
+            for jugadores in jugadoresInscritos:
+                if jugadores[1] == "Invitado":
+                    invitado = True
+            if invitado and datosTorneo[4] == "False":
+                messagebox.showerror("Error", "!!No se permiten invitados en este torneo!!")
+                return
+            if invitado == False and datosTorneo[4] == "True":
+                messagebox.showerror("Error", "!!Debe haber al menos un invitado en este torneo!!")
+                return 
+            respuesta = bd.crearTablaDespuesTorneo(datosTorneo[0], datosTorneo[1], datosTorneo[2], datosTorneo[3], datosTorneo[4], datosTorneo[5])
+            for jugadores in jugadoresInscritos:
+                bd.consultarDatosJugador(respuesta, jugadores[0], list(desempate))
+            messagebox.showinfo("Torneo", "!!Torneo cargado con exito!!")
+            ventanaTorneo2.destroy()
+            interfazTorneo6(ventanaMain, respuesta, datosTorneo, list(estadisticasJugadores))
+
     #Ventana
     ventanaTorneo2 = tk.Toplevel(ventanaMain)
     ventanaTorneo2.title("Torneo")
-    anchoVentana = 800
+    anchoVentana = 850
     altoVentana = 450
     x = (ventanaTorneo2.winfo_screenwidth() - anchoVentana)//2
     y = (ventanaTorneo2.winfo_screenheight() - altoVentana)//2
@@ -211,7 +250,7 @@ def interfazTorneo2(ventanaMain, nombreTorneo, rondas):
     ventanaTorneo2.bind("<Double-Button-1>", desseleccionarFila)
 
     #Widgets
-    labelTitulo = tk.Label(ventanaTorneo2, text=f"{nombreTorneo}", font= 20)
+    labelTitulo = tk.Label(ventanaTorneo2, text=f"{datosTorneo[0]}", font= 20)
     labelTitulo.pack(pady= 10)
 
     frame = tk.Frame(ventanaTorneo2, bd=10, bg="gray", width=500, height=500)
@@ -250,18 +289,21 @@ def interfazTorneo2(ventanaMain, nombreTorneo, rondas):
     menu.add_command(label="Editar", command=editarFila)
     menu.add_command(label="Borrar", command=borrarFila)
 
-    botonAgregarJugador = tk.Button(ventanaTorneo2, text="Agregar Jugador", font=15, command=lambda:(ventanaTorneo2.destroy(), interfazTorneo3(ventanaMain, nombreTorneo, rondas)))
+    botonAgregarJugador = tk.Button(ventanaTorneo2, text="Agregar Jugador", font=15, command=lambda:(ventanaTorneo2.destroy(), interfazTorneo3(ventanaMain, nombreTorneo, datosTorneo)))
     botonAgregarJugador.pack(padx=10, pady=10, side=tk.RIGHT)
+
+    botonContinuarTorneo = tk.Button(ventanaTorneo2, text="Continuar", font=15, command= cargarTorneo)
+    botonContinuarTorneo.pack(padx=10, pady=10, side=tk.RIGHT)
 
     labelJugadoresInscritos = tk.Label(ventanaTorneo2, text="!!No hay jugadores inscritos!!", bg="lightgray", font=20)
     labelJugadoresInscritos.pack(padx=10, pady=10, side=tk.LEFT)
     
-    labelRondas = tk.Label(ventanaTorneo2, text=f"Rondas: {rondas}", bg="lightgray", font=20)
+    labelRondas = tk.Label(ventanaTorneo2, text=f"Rondas:{datosTorneo[3]} ", bg="lightgray", font=20)
     labelRondas.pack(padx=10, pady=10, side=tk.LEFT)
 
     actualizarTabla()
 
-def interfazTorneo3(ventanaMain, nombreTorneo, rondas):
+def interfazTorneo3(ventanaMain, nombreTorneo, datosTorneo):
     #Funciones
     def filtrarJugadores(evento):
         datos = bd.consultarDatosJugadores()
@@ -284,15 +326,19 @@ def interfazTorneo3(ventanaMain, nombreTorneo, rondas):
     def seleccionarJugador(evento):
         indice = listaJugadores.curselection()
         nombreJugador = listaJugadores.get(indice)
-        bd.consultarDatosJugador(nombreJugador, nombreTorneo)
+        respuesta = bd.consultarDatosJugador(nombreTorneo, nombreJugador, True)
+        if respuesta == True:
+            labelError.config(text="!!Ya existe un Jugador inscrito \n con estos datos por favor \n ingrese uno diferente!!", bg="lightgray", font=10)
+            labelError.after(3000, lambda:labelError.config(text="", bg="gray"))
+            return
         ventanaTorneo3.destroy()
-        interfazTorneo2(ventanaMain, nombreTorneo, rondas)  
+        interfazTorneo2(ventanaMain, nombreTorneo, datosTorneo)  
 
     #Ventana
     ventanaTorneo3 = tk.Toplevel(ventanaMain)
     ventanaTorneo3.title("Jugadores")
-    anchoVentana = 275
-    altoVentana = 325
+    anchoVentana = 300
+    altoVentana = 400
     x = (ventanaTorneo3.winfo_screenwidth() - anchoVentana)//2
     y = (ventanaTorneo3.winfo_screenheight() - altoVentana)//2
     ventanaTorneo3.geometry(f"{anchoVentana}x{altoVentana}+{x}+{y}")
@@ -300,7 +346,7 @@ def interfazTorneo3(ventanaMain, nombreTorneo, rondas):
     ventanaTorneo3.grab_set()
     ventanaTorneo3.resizable(False, False)
     ventanaTorneo3.configure(bg="lightgray")
-    ventanaTorneo3.bind("<Escape>", lambda e:(ventanaTorneo3.destroy(), interfazTorneo2(ventanaMain, nombreTorneo, rondas)))
+    ventanaTorneo3.bind("<Escape>", lambda e:(ventanaTorneo3.destroy(), interfazTorneo2(ventanaMain, nombreTorneo, datosTorneo)))
     #Widgets
     labelAgregarJugador = tk.Label(ventanaTorneo3, text="Agregar Jugador", font=15)
     labelAgregarJugador.pack(padx=10, pady=10) 
@@ -311,17 +357,20 @@ def interfazTorneo3(ventanaMain, nombreTorneo, rondas):
     frame.grid_columnconfigure(1, weight=1)   
         
     listaJugadores = tk.Listbox(frame, width=20, height=10, font=20)
-    listaJugadores.grid(row=0, column=0)
+    listaJugadores.grid(row=0, column=0, sticky="ew")
     x = listaJugadores.bind("<Double-Button-1>", seleccionarJugador)
 
     entryBusqueda = tk.Entry(frame, font=20)
-    entryBusqueda.grid(row=1, padx=5, pady=10)
+    entryBusqueda.grid(row=1, column=0, padx=10, pady=10, sticky="ew")
     entryBusqueda.focus()
     entryBusqueda.bind("<KeyRelease>", filtrarJugadores)
 
+    labelError = tk.Label(frame, text="", bg="gray", font=10)
+    labelError.grid(row=2, column=0, padx=10, pady=10, sticky="ew")
+
     filtrarJugadores(x)
 
-def interfazTorneo4(ventanaMain, nombreTorneo, nombreJugador, vict, tabl, derro, desemp, rondas):
+def interfazTorneo4(ventanaMain, nombreTorneo, nombreJugador, vict, tabl, derro, desemp, datosTorneo):
     #Funciones
     def datos():
         desempates = desemp.split("  ")
@@ -368,15 +417,15 @@ def interfazTorneo4(ventanaMain, nombreTorneo, nombreJugador, vict, tabl, derro,
             return
         
         estadisticas = int(victorias) + int(tablas) + int(derrotas)
-        if estadisticas != int(rondas):
-            labelError.config(text=f"!!El número de victorias + tablas + derrotas \n debe ser igual al numero de rondas: [{rondas}]!!", bg="lightgray", font=10)
+        if estadisticas != int(datosTorneo[3]):
+            labelError.config(text=f"!!El número de victorias + tablas + derrotas \n debe ser igual al numero de rondas: [{datosTorneo[3]}]!!", bg="lightgray", font=10)
             labelError.after(3000, lambda:labelError.config(text="", bg="gray"))
             return
         
         puntos = int(victorias) + int(tablas)/2
         bd.actualizarJugadorTorneo(nombreTorneo, nombreJugador, victorias, tablas, derrotas, puntos, round(float(desempate1),2), round(float(desempate2),2))
         ventanaTorneo4.destroy()
-        interfazTorneo2(ventanaMain, nombreTorneo, rondas)
+        interfazTorneo2(ventanaMain, nombreTorneo, datosTorneo)
 
     #Ventana
     ventanaTorneo4 = tk.Toplevel(ventanaMain)
@@ -391,7 +440,7 @@ def interfazTorneo4(ventanaMain, nombreTorneo, nombreJugador, vict, tabl, derro,
     ventanaTorneo4.focus_force()
     ventanaTorneo4.grab_set()
     ventanaTorneo4.configure(bg="lightgray")
-    ventanaTorneo4.bind("<Escape>", lambda e:(ventanaTorneo4.destroy(), interfazTorneo2(ventanaMain, nombreTorneo, rondas )))
+    ventanaTorneo4.bind("<Escape>", lambda e:(ventanaTorneo4.destroy(), interfazTorneo2(ventanaMain, nombreTorneo, datosTorneo)))
 
     #Widgets
     labelTitulo = tk.Label(ventanaTorneo4, text="EditarJugador", font= 20)
@@ -445,6 +494,124 @@ def interfazTorneo4(ventanaMain, nombreTorneo, nombreJugador, vict, tabl, derro,
 
     datos()
 
+#particpantes = 25
+#z = [x for x in range(1, particpantes)]
+#for i in z:
+    #print(particpantes)
+posiciones = 1
+#[Nombre y Apellido], Facultad, Elo, Victorias, Torneos, Medallas
+#diferenciaElo, Victorias
+def interfazTorneo6(ventanaMain, nombreTorneo, datosTorneo, estadisticasJugadores):
+    #Funciones
+    def actualizarTabla():
+        global posiciones
+        for dato in tabla.get_children():
+            tabla.delete(dato)
+        datos = bd.consultarDatosDespuesTorneo(nombreTorneo)
+        if len(datos) > 0:
+            labelJugadoresInscritos.config(text=f"Jugadores inscritos: {len(datos)}")
+        else:
+            return
+        
+        if not datos is None:
+            for registro in datos:
+                tag = ""
+                if registro[2] == "Ingeniería":
+                    tag = "Ingeniería"
+                elif registro[2] == "Sociales":
+                    tag = "Sociales"
+                elif registro[2] == "Arquitectura":
+                    tag = "Arquitectura"
+                elif registro[2] == "Derecho":
+                    tag = "Derecho"
+                elif registro[2] == "Odontología":
+                    tag = "Odontología"
+                elif registro[2] == "Invitado":
+                    tag = "Invitado"
+                else:
+                    tag = "UJAP"
+                tabla.tag_configure("Ingeniería", background="#00008B", foreground="#FFFFFF")
+                tabla.tag_configure("Sociales", background="#A52A2A", foreground="#FFFFFF")
+                tabla.tag_configure("Arquitectura", background="#402169", foreground="#FFFFFF")
+                tabla.tag_configure("Derecho", background="#000000", foreground="#FFFFFF")
+                tabla.tag_configure("Odontología", background="#888888", foreground="#000000")
+                tabla.tag_configure("Invitado", background="#73bf00", foreground="#FFFFFF")
+                tabla.tag_configure("UJAP", background="#E54A27", foreground="#FFFFFF")
+                
+                print(type(estadisticasJugadores), estadisticasJugadores)
+                participantes = datosTorneo[2]
+                                            # [Nombre y Apellido], Genero, Facultad, Elo, Victorias, Medallas, Torneos, Puntos, Desempate1, Desempate2
+                tabla.insert("", tk.END, values=(posiciones, registro[0], registro[1], registro[2], registro[3], registro[4],registro[6]), tags=(tag))
+                #tabla.insert("", tk.END, values=(posiciones, registro[0], registro[1], registro[2], (f"{registro[3] + estadisticasJugadores[0]}"), (f"{registro[4] + estadisticasJugadores[1]}"),(f"{registro[5] + estadisticasJugadores[1]}")), tags=(tag))
+                                            #"#", "Nombre y Apellido", "Genero", "Facultad", "Elo(+/-)", "Victorias(+)", "Medallas(+)"
+                posiciones += 1
+
+        if len(datos) > 10:
+            scrollbar = ttk.Scrollbar(frame, orient=tk.VERTICAL, command=tabla.yview)
+            tabla.configure(yscroll=scrollbar.set)
+            scrollbar.grid(row=0, column=10, sticky="ns")
+
+    def desseleccionarFila(evento):
+        for fila in tabla.selection():
+            tabla.selection_remove(fila)
+
+    #Ventana
+    ventanaTorneo6 = tk.Toplevel(ventanaMain)
+    ventanaTorneo6.title("Torneo")
+    anchoVentana = 700
+    altoVentana = 450
+    x = (ventanaTorneo6.winfo_screenwidth() - anchoVentana)//2
+    y = (ventanaTorneo6.winfo_screenheight() - altoVentana)//2
+    ventanaTorneo6.geometry(f"{anchoVentana}x{altoVentana}+{x}+{y}")
+    #ventanaMain.withdraw()
+    ventanaTorneo6.focus_force()
+    ventanaTorneo6.grab_set()
+    ventanaTorneo6.resizable(False, False)
+    ventanaTorneo6.configure(bg="lightgray")
+    ventanaTorneo6.bind("<Double-Button-1>", desseleccionarFila)
+
+    #Widgets
+    labelTitulo = tk.Label(ventanaTorneo6, text=f"{nombreTorneo}", font= 20)
+    labelTitulo.pack(pady= 10)
+
+    frame = tk.Frame(ventanaTorneo6, bd=10, bg="gray", width=500, height=500)
+    frame.pack_propagate(False)
+    frame.pack()
+    frame.grid_columnconfigure(1, weight=1)
+
+    estilo = ttk.Style()
+    estilo.configure("Treeview.Heading", font= 20)
+    estilo.configure("Treeview", font= 15, rowheight=30)
+    tabla = ttk.Treeview(frame, columns=("#", "Nombre y Apellido", "Genero", "Facultad", "Elo(+/-)", "Victorias(+)", "Medallas(+)"),show="headings")
+    tabla.grid(row=0, column=0, columnspan=9, padx=5, pady=10, sticky="ew")
+
+    tabla.column("#", anchor=tk.CENTER, width=40)
+    tabla.column("Nombre y Apellido", anchor=tk.CENTER, width=200)
+    tabla.column("Genero", anchor=tk.CENTER, width=60)
+    tabla.column("Facultad", anchor=tk.CENTER, width=95)
+    tabla.column("Elo(+/-)", anchor=tk.CENTER, width=85)
+    tabla.column("Victorias(+)", anchor=tk.CENTER, width=70)
+    tabla.column("Medallas(+)", anchor=tk.CENTER, width=70)
+
+    tabla.heading("#", text="#")
+    tabla.heading("Nombre y Apellido", text="Nombre y Apellido")
+    tabla.heading("Genero", text="Genero")
+    tabla.heading("Facultad", text="Facultad")
+    tabla.heading("Elo(+/-)", text="Elo(+/-)")
+    tabla.heading("Victorias(+)", text="Victorias(+)")
+    tabla.heading("Medallas(+)", text="Medallas(+)")
+
+    botonAgregarJugador = tk.Button(ventanaTorneo6, text="Agregar Jugador", font=15, command=lambda:(ventanaTorneo6.destroy(), interfazTorneo3(ventanaMain, nombreTorneo, datosTorneo)))
+    botonAgregarJugador.pack(padx=10, pady=10, side=tk.RIGHT)
+
+    labelJugadoresInscritos = tk.Label(ventanaTorneo6, text="!!No hay jugadores inscritos!!", bg="lightgray", font=20)
+    labelJugadoresInscritos.pack(padx=10, pady=10, side=tk.LEFT)
+    
+    labelRondas = tk.Label(ventanaTorneo6, text=f"Rondas: {datosTorneo[3]}", bg="lightgray", font=20)
+    labelRondas.pack(padx=10, pady=10, side=tk.LEFT)
+
+    actualizarTabla()
+
 def editarTorneo():
     pass
 
@@ -458,6 +625,7 @@ def filtrarTorneos():
     #interfazTorneo1()
     #interfazTorneo2("Julio_2025/10/20_P12_R12_True_12", 12)
     #interfazTorneo3()
+    #interfazTorneo5()
 
 #5to poder
 #El nombre de la rosa

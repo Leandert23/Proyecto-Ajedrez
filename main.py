@@ -1,7 +1,6 @@
 import tkinter as tk
 import torneo, datos, jugadores
-
-
+#Editar Torneo
 ventanaMain = tk.Tk()
 ventanaMain.title("Ajedrez")
 anchoVentana = 500
@@ -10,6 +9,7 @@ x = (ventanaMain.winfo_screenwidth() - anchoVentana)//2
 y = (ventanaMain.winfo_screenheight() - altoVentana)//2
 ventanaMain.geometry(f"{anchoVentana}x{altoVentana}+{x}+{y}")
 ventanaMain.configure(bg="lightgray")
+
 def interfazTorneo():
     torneo.interfazTorneo1(ventanaMain)
 
@@ -28,4 +28,3 @@ botonDatos = tk.Button(ventanaMain, text= "Datos", bg="gray", fg="black", comman
 botonDatos.pack(padx=50, pady=10, fill=tk.BOTH, expand=True)
 etiquetaVersion = tk.Label(ventanaMain, text="Versión 1.0", bg="lightgray", fg="black").pack()
 ventanaMain.mainloop()
-

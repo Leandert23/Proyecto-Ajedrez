@@ -443,7 +443,12 @@ def interfazJugadores4(ventanaMain, nombreJugador, gen, fac, el, vict, torn, med
             labelError.after(3000, lambda:labelError.config(text="", bg="gray"))
             return
 
-        bd.actualizarDatosJugador(nombreJugador, nombreCompleto, genero[0], facultad, elo, victorias, torneos, medallas)
+        respuesta = bd.actualizarDatosJugador(nombreJugador, nombreCompleto, genero[0], facultad, elo, victorias, torneos, medallas)
+        if respuesta == True:
+            labelError.config(text="!!Ya existe un Jugador con estos datos \n por favor ingrese uno nuevo!!", bg="lightgray", font=12)
+            labelError.after(3000, lambda:labelError.config(text="", bg="gray"))
+            return
+        labelError.config(text=f"!!Jugador editado con exito \n {respuesta}!!", bg="lightgray", font=12)
         ventanaJugador4.destroy()
         interfazJugadores1(ventanaMain)
     
