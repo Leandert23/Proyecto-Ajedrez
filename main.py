@@ -1,5 +1,5 @@
 import tkinter as tk
-import torneo, datos, jugadores
+import torneo, datos, jugadores, baseDatos
 #Editar Torneo
 ventanaMain = tk.Tk()
 ventanaMain.title("Ajedrez")
@@ -27,4 +27,8 @@ botonJugadores.pack(padx=50, pady=10, fill=tk.BOTH, expand=True)
 botonDatos = tk.Button(ventanaMain, text= "Datos", bg="gray", fg="black", command= interfazDatos, font=30)
 botonDatos.pack(padx=50, pady=10, fill=tk.BOTH, expand=True)
 etiquetaVersion = tk.Label(ventanaMain, text="Versión 1.0", bg="lightgray", fg="black").pack()
+
+baseDatos.crearTablaJugadores()
 ventanaMain.mainloop()
+
+

@@ -386,7 +386,7 @@ def interfazJugadores3():
 """
 def interfazJugadores4(ventanaMain, nombreJugador, gen, fac, el, vict, torn, meda):
     #Funciones
-    def datos():
+    def insertarDatos():
         entryNombreCompleto.insert(0, nombreJugador)
         if gen == "M":
             menuGeneros.config(text="Masculino")
@@ -448,7 +448,7 @@ def interfazJugadores4(ventanaMain, nombreJugador, gen, fac, el, vict, torn, med
             labelError.config(text="!!Ya existe un Jugador con estos datos \n por favor ingrese uno nuevo!!", bg="lightgray", font=12)
             labelError.after(3000, lambda:labelError.config(text="", bg="gray"))
             return
-        labelError.config(text=f"!!Jugador editado con exito \n {respuesta}!!", bg="lightgray", font=12)
+        labelError.config(text=f"!!Jugador editado con exito!!", bg="lightgray", font=12)
         ventanaJugador4.destroy()
         interfazJugadores1(ventanaMain)
     
@@ -550,7 +550,7 @@ def interfazJugadores4(ventanaMain, nombreJugador, gen, fac, el, vict, torn, med
     labelError = tk.Label(frame, text="", bg="gray")
     labelError.grid(row=8, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
 
-    datos()
+    insertarDatos()
 def añadirJugador():
     pass
 

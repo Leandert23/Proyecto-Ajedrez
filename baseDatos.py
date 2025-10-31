@@ -44,7 +44,7 @@ def consultarDatosAntesTorneo(nombreTorneo):
         #print("Consultando datos del torneo:", nombreTorneo)
         conexion = sql.connect("ajedrez.db")
         cursor = conexion.cursor()
-        instrucccion = f"SELECT * FROM '{nombreTorneo}'"
+        instrucccion = f"SELECT * FROM '{nombreTorneo}' ORDER BY Elo DESC"
         cursor.execute(instrucccion)
         jugadoresInscritos = cursor.fetchall()
         return jugadoresInscritos
@@ -85,18 +85,19 @@ def crearTablaAntesTorneo(nombre, fecha, participantes, rondas, invitados, descr
     try:
         conexion = sql.connect("ajedrez.db")
         cursor = conexion.cursor()
-        nombreTorneo = f"AT_{nombre}_{fecha}_P{participantes}_R{rondas}_{invitados}_{descripcion}".replace("-", "/")
+        nombreTorneo = f"AT_{nombre}_{fecha}_P{participantes}_R{rondas}_{invitados}{"_" if descripcion != "" else ""}{descripcion}".replace("-", "/")
         instrucccion = f"""CREATE TABLE '{nombreTorneo}'(
                                                     'Nombre y Apellido' TEXT Default 'Nombre',
                                                     Genero TEXT DEFAULT 'M',
                                                     Facultad TEXT DEFAULT 'Ingeniería',
                                                     Elo INTEGER DEFAULT 0,
-                                                    Victorias INTEGER DEFAULT 0,
-                                                    Tablas INTEGER DEFAULT 0,
-                                                    Derrotas INTEGER DEFAULT 0,
+                                                    Victorias TEXT DEFAULT '0',
+                                                    Tablas TEXT DEFAULT '0',
+                                                    Derrotas TEXT DEFAULT '0',
                                                     Puntos NUMERIC DEFAULT 0,
                                                     'Desempate (1)' REAL DEFAULT 0.00,
                                                     'Desempate (2)' REAL DEFAULT 0.00,
+                                                    'Diferencia Elo' INTEGER DEFAULT 0,
                                                     PRIMARY KEY('Nombre y Apellido')
                                                     )"""
         cursor.execute(instrucccion)
@@ -107,7 +108,7 @@ def crearTablaAntesTorneo(nombre, fecha, participantes, rondas, invitados, descr
     finally:
         conexion.commit()
         conexion.close()
-
+        
 def crearTablaDespuesTorneo(nombre, fecha, participantes, rondas, invitados, descripcion):
     try:
         conexion = sql.connect("ajedrez.db")
@@ -121,9 +122,9 @@ def crearTablaDespuesTorneo(nombre, fecha, participantes, rondas, invitados, des
                                                     'Victorias (+)' INTEGER DEFAULT 0,
                                                     'Medallas (+)' INTEGER DEFAULT 0,
                                                     Torneos	INTEGER DEFAULT 0,
-                                                    Puntos INTEGER DEFAULT 0,
-                                                    'Desempate (1)'	REAL DEFAULT 0.0,
-                                                    'Desempate (2)'	REAL DEFAULT 0.0,
+                                                    Puntos NUMERIC DEFAULT 0,
+                                                    'Desempate (1)'	REAL DEFAULT 0.00,
+                                                    'Desempate (2)'	REAL DEFAULT 0.00,
                                                     PRIMARY KEY("Nombre y Apellido")
                                                     )"""
         cursor.execute(instrucccion)
@@ -131,6 +132,27 @@ def crearTablaDespuesTorneo(nombre, fecha, participantes, rondas, invitados, des
     except Exception as e:
         print("Error al agregar datos (crearTablaDespuesTorneo):", e)
         return True
+    finally:
+        conexion.commit()
+        conexion.close()
+
+def crearTablaJugadores():
+    try:
+        conexion = sql.connect("ajedrez.db")
+        cursor = conexion.cursor()
+        instrucccion = f"""CREATE TABLE IF NOT EXISTS Jugadores (
+                                                                'Nombre y Apellido'	TEXT DEFAULT 'Nombre',
+                                                                Genero	TEXT DEFAULT 'M',
+                                                                Facultad	TEXT DEFAULT 'Ingeniería',
+                                                                Elo	INTEGER DEFAULT 0,
+                                                                Victorias	INTEGER DEFAULT 0,
+                                                                Torneos	INTEGER DEFAULT 0,
+                                                                Medallas	INTEGER DEFAULT 0,
+                                                                PRIMARY KEY("Nombre y Apellido")
+                                                                )"""
+        cursor.execute(instrucccion)
+    except Exception as e:
+        print("Error al crear (crearTablaJugadores):", e)
     finally:
         conexion.commit()
         conexion.close()
@@ -169,7 +191,7 @@ def agregarDatosDespuesTorneo(nombreTorneo, datos, desempate):
         instrucccion = f"INSERT INTO'{nombreTorneo}'([Nombre y Apellido], Genero, Facultad, [Elo (+/-)], [Victorias (+)], [Medallas (+)], Torneos, Puntos, [Desempate (1)], [Desempate (2)]) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
         datosJugador = list(datos) + list(desempate)
         cursor.execute(instrucccion, (datosJugador))
-        print(datosJugador)
+        #print(datosJugador)
     except Exception as e:
         print("Error al agregar datos (agregarDatosDespuesTorneo):", e)
         return True
@@ -189,11 +211,11 @@ def agregarDatosRankingGeneral(nombre, apellido, facultad, victorias, elo):
         conexion.commit()
         conexion.close()
 
-def actualizarJugadorTorneo(nombreTorneo, nombreJugador, victorias, tablas, derrotas, puntos, desempate1, desempate2):
+def actualizarJugadorTorneo(nombreTorneo, nombreJugador, victorias, tablas, derrotas, puntos, desempate1, desempate2, diferenciaElo):
     try:
         conexion = sql.connect("ajedrez.db")
         cursor = conexion.cursor()
-        instrucccion = f"UPDATE '{nombreTorneo}'SET Victorias = {victorias}, Tablas = {tablas}, Derrotas = {derrotas}, Puntos = {puntos}, [Desempate (1)] = {desempate1}, [Desempate (2)] = {desempate2} Where [Nombre y Apellido] = '{nombreJugador}'"
+        instrucccion = f"UPDATE '{nombreTorneo}'SET Victorias = '{victorias}', Tablas = '{tablas}', Derrotas = '{derrotas}', Puntos = {puntos}, [Desempate (1)] = {desempate1}, [Desempate (2)] = {desempate2}, [Diferencia Elo] = {diferenciaElo} Where [Nombre y Apellido] = '{nombreJugador}'"
         cursor.execute(instrucccion)
         return nombreJugador
     except Exception as e:
@@ -212,6 +234,21 @@ def actualizarDatosJugador(nombreJugador, nombreCompleto, genero, facultad, elo,
         return nombreJugador
     except Exception as e:
         print("Error al actualizar datos (actualizarDatosJugador):", e)
+        return True
+    finally:
+        conexion.commit()
+        conexion.close()
+
+def actualizarAntesTorneo(nombreViejo, nombre, fecha, participantes, rondas, invitados, descripcion):
+    try:
+        conexion = sql.connect("ajedrez.db")
+        cursor = conexion.cursor()
+        nombreNuevo = f"AT_{nombre}_{fecha}_P{participantes}_R{rondas}_{invitados}{"_" if descripcion != "" else ""}{descripcion}".replace("-", "/")
+        instrucccion = f"ALTER TABLE '{nombreViejo}' RENAME TO '{nombreNuevo}'"
+        cursor.execute(instrucccion)
+        return nombreNuevo
+    except Exception as e:
+        print("Error al agregar datos (actualizarAntesTorneo):", e)
         return True
     finally:
         conexion.commit()
