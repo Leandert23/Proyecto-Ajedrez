@@ -1,4 +1,6 @@
 def validarNombre(nombre):
+    if len(nombre) > 15:
+        return False
     if nombre.strip() == "":
             return False
     for letra in nombre:

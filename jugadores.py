@@ -2,12 +2,20 @@ import tkinter as tk
 import baseDatos as bd
 import validaciones as vl
 from tkinter import ttk, messagebox
+import sys
 
 def interfazJugadores1(ventanaMain):
     #Funciones
     def cargarJugadores():
+        for fila in tabla.get_children():
+            tabla.delete(fila)
         datos = bd.consultarDatosJugadores()
-        labelJugadores.config(text=f"Jugadores:{len(datos)}")
+
+        if len(datos) > 0:
+            labelJugadores.config(text=f"Jugadores: {len(datos)}")
+        else:
+            labelJugadores.config(text=f"Jugadores: 0")
+            return
         for registro in datos:
             tag = ""
             if registro[2] == "Ingeniería":
@@ -45,15 +53,16 @@ def interfazJugadores1(ventanaMain):
             tabla.delete(dato)
         cargarJugadores()"""
     
-    def menu(event):
-        fila = tabla.identify_row(event.y)
+    def menu(evento):
+        fila = tabla.identify_row(evento.y)
         if fila:
-            menu.tk_popup(event.x_root, event.y_root)
+            tabla.selection_set(fila)
+            menu.tk_popup(evento.x_root, evento.y_root)
     
     def editarFila():
         fila = tabla.selection()
         datos = tabla.item(fila, 'values')
-        ventanaJugadores1.destroy()
+        ventanaJugadores1.withdraw()
         interfazJugadores4(ventanaMain, datos[0], datos[1], datos[2], datos[3], datos[4], datos[5], datos[6])
 
     def borrarFila():
@@ -61,16 +70,13 @@ def interfazJugadores1(ventanaMain):
         valores = tabla.item(item, 'values')
         respuesta = messagebox.askyesno("Borrar", f"¿Estás seguro de borrar a {valores[0]}?")
         if respuesta:
-            tabla.delete(item)
             bd.eliminarDatosJugador(valores[0])
-            for children in tabla.get_children():
-                tabla.delete(children)
             cargarJugadores()
 
-    def desseleccionarFila(evento):
+    def desseleccionarFila():
         for fila in tabla.selection():
             tabla.selection_remove(fila)
-    
+
     #Ventana
     ventanaJugadores1 = tk.Toplevel(ventanaMain)
     ventanaJugadores1.title("Jugadores")
@@ -79,15 +85,17 @@ def interfazJugadores1(ventanaMain):
     x = (ventanaJugadores1.winfo_screenwidth() - anchoVentana)//2
     y = (ventanaJugadores1.winfo_screenheight() - altoVentana)//2
     ventanaJugadores1.geometry(f"{anchoVentana}x{altoVentana}+{x}+{y}")
-    ventanaMain.withdraw()
     ventanaJugadores1.focus_force()
     ventanaJugadores1.grab_set()
     ventanaJugadores1.resizable(False, False)
     ventanaJugadores1.configure(bg="lightgray")
+    ventanaJugadores1.bind("<Escape>", lambda e:ventanaJugadores1.withdraw())
+    ventanaJugadores1.bind("<Double-Button-1>", lambda e:desseleccionarFila())
+    ventanaJugadores1.protocol("WM_DELETE_WINDOW", lambda: (ventanaJugadores1.destroy(), sys.exit(0)))
 
     #Widgets
     labelTitulo = tk.Label(ventanaJugadores1, text=f"Jugadores", font= 20)
-    labelTitulo.pack(pady= 10)
+    labelTitulo.pack(pady= 10) 
 
     frame = tk.Frame(ventanaJugadores1, bd=10, bg="gray", width=500, height=500)
     frame.pack_propagate(False)
@@ -117,19 +125,17 @@ def interfazJugadores1(ventanaMain):
     tabla.heading("Torneos", text="Torneos")
     tabla.heading("Medallas", text="Medallas")
 
-    ventanaJugadores1.bind("<Double-Button-1>", desseleccionarFila)
-
     menu = tk.Menu(ventanaJugadores1, tearoff=0)
     menu.add_command(label="Editar", command=editarFila)
     menu.add_command(label="Borrar", command=borrarFila)    
     
-    labelJugadores = tk.Label(ventanaJugadores1, text="Jugadores:", bg="lightgray", fg="black", font=15)
+    labelJugadores = tk.Label(ventanaJugadores1, text="Jugadores: 0", bg="lightgray", fg="black", font=15)
     labelJugadores.pack(padx=10, pady=10, side=tk.LEFT)
 
     #botonBuscarJugador = tk.Button(ventanaJugadores1, text="Buscar Jugador", font=15, command=lambda: interfazJugadores3())
     #botonBuscarJugador.pack(padx=10, pady=10, side=tk.RIGHT)
 
-    botonCrearJugador = tk.Button(ventanaJugadores1, text="Crear Jugador", font=15, command=lambda:(ventanaJugadores1.destroy(), interfazJugadores2(ventanaMain)))
+    botonCrearJugador = tk.Button(ventanaJugadores1, text="Agregar Jugador", font=15, command=lambda:(ventanaJugadores1.withdraw(), interfazJugadores2(ventanaMain)))
     botonCrearJugador.pack(padx=10, pady=10, side=tk.RIGHT)
 
     cargarJugadores()
@@ -234,11 +240,11 @@ def interfazJugadores2(ventanaMain):
     y = (ventanaJugadores2.winfo_screenheight() - altoVentana)//2
     ventanaJugadores2.geometry(f"{anchoVentana}x{altoVentana}+{x}+{y}")
     ventanaJugadores2.resizable(False, False)
-    ventanaMain.withdraw()
     ventanaJugadores2.focus_force()
     ventanaJugadores2.grab_set()
     ventanaJugadores2.configure(bg="lightgray")
     ventanaJugadores2.bind("<Escape>", lambda e:(ventanaJugadores2.destroy(), interfazJugadores1(ventanaMain)))
+    ventanaJugadores2.protocol("WM_DELETE_WINDOW", lambda: (ventanaJugadores2.destroy(), sys.exit(0)))
 
     #Widgets
     labelTitulo = tk.Label(ventanaJugadores2, text="Agregar Jugador", font= 20)
@@ -321,7 +327,7 @@ def interfazJugadores2(ventanaMain):
 """
 def interfazJugadores3():
     #Funciones
-    def filtrarJugadores(evento):
+    def filtrarJugadores():
         datos = bd.consultarDatosJugadores()
         listaJugadoresFiltrados = []
         nombreCompletos = []
@@ -361,7 +367,7 @@ def interfazJugadores3():
     frame.pack()
     frame.grid_columnconfigure(1, weight=1)
 
-    def seleccionarJugador(evento):
+    def seleccionarJugador():
         indice = listaJugadores.curselection()
         elemento = listaJugadores.get(indice)
         ventana.destroy()
@@ -375,7 +381,7 @@ def interfazJugadores3():
     entryBusqueda.pack(padx=10, pady=10)
     entryBusqueda.focus()
     entryBusqueda.bind("<Key>", filtrarJugadores, add="+")
-    entryBusqueda.bind("<BackSpace>", filtrarJugadores)    def hola(event):
+    entryBusqueda.bind("<BackSpace>", filtrarJugadores)    def hola():
         
 
     entryNombre.bind("<Key>", hola)
@@ -397,6 +403,7 @@ def interfazJugadores4(ventanaMain, nombreJugador, gen, fac, el, vict, torn, med
         entryVictorias.insert(0, vict)
         entryTorneos.insert(0, torn)
         entryMedallas.insert(0, meda)
+        entryNombreCompleto.focus()
         
     def editarJugador():
         if vl.validarNombre(entryNombreCompleto.get()) and len(entryNombreCompleto.get()) <= 20:
@@ -443,13 +450,13 @@ def interfazJugadores4(ventanaMain, nombreJugador, gen, fac, el, vict, torn, med
             labelError.after(3000, lambda:labelError.config(text="", bg="gray"))
             return
 
-        respuesta = bd.actualizarDatosJugador(nombreJugador, nombreCompleto, genero[0], facultad, elo, victorias, torneos, medallas)
+        respuesta = bd.editarDatosJugador(nombreJugador, nombreCompleto, genero[0], facultad, elo, victorias, torneos, medallas)
         if respuesta == True:
             labelError.config(text="!!Ya existe un Jugador con estos datos \n por favor ingrese uno nuevo!!", bg="lightgray", font=12)
             labelError.after(3000, lambda:labelError.config(text="", bg="gray"))
             return
         labelError.config(text=f"!!Jugador editado con exito!!", bg="lightgray", font=12)
-        ventanaJugador4.destroy()
+        ventanaJugadores4.destroy()
         interfazJugadores1(ventanaMain)
     
     def limpiar():
@@ -463,25 +470,25 @@ def interfazJugadores4(ventanaMain, nombreJugador, gen, fac, el, vict, torn, med
         entryNombreCompleto.focus()
 
     #Ventana
-    ventanaJugador4 = tk.Toplevel(ventanaMain)
-    ventanaJugador4.title("Jugadores")
+    ventanaJugadores4 = tk.Toplevel(ventanaMain)
+    ventanaJugadores4.title("Jugadores")
     anchoVentana = 400
     altoVentana = 525
-    x = (ventanaJugador4.winfo_screenwidth() - anchoVentana)//2
-    y = (ventanaJugador4.winfo_screenheight() - altoVentana)//2
-    ventanaJugador4.geometry(f"{anchoVentana}x{altoVentana}+{x}+{y}")
-    ventanaJugador4.resizable(False, False)
-    ventanaMain.withdraw()
-    ventanaJugador4.focus_force()
-    ventanaJugador4.grab_set()
-    ventanaJugador4.configure(bg="lightgray")
-    ventanaJugador4.bind("<Escape>", lambda e:(ventanaJugador4.destroy(), interfazJugadores1(ventanaMain)))
+    x = (ventanaJugadores4.winfo_screenwidth() - anchoVentana)//2
+    y = (ventanaJugadores4.winfo_screenheight() - altoVentana)//2
+    ventanaJugadores4.geometry(f"{anchoVentana}x{altoVentana}+{x}+{y}")
+    ventanaJugadores4.resizable(False, False)
+    ventanaJugadores4.focus_force()
+    ventanaJugadores4.grab_set()
+    ventanaJugadores4.configure(bg="lightgray")
+    ventanaJugadores4.bind("<Escape>", lambda e:(ventanaJugadores4.destroy(), interfazJugadores1(ventanaMain)))
+    ventanaJugadores4.protocol("WM_DELETE_WINDOW", lambda: (ventanaJugadores4.destroy(), sys.exit(0)))
 
     #Widgets
-    labelTitulo = tk.Label(ventanaJugador4, text="EditarJugador", font= 20)
+    labelTitulo = tk.Label(ventanaJugadores4, text="EditarJugador", font= 20)
     labelTitulo.pack(pady= 10)
 
-    frame = tk.Frame(ventanaJugador4, bd=10, bg="gray", width=500, height=500)
+    frame = tk.Frame(ventanaJugadores4, bd=10, bg="gray", width=500, height=500)
     frame.pack_propagate(False)
     frame.pack()
     frame.grid_columnconfigure(1, weight=1)
