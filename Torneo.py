@@ -76,10 +76,9 @@ def interfazTorneo1(ventanaMain):
     ventanaTorneo1.grab_set()
     ventanaTorneo1.resizable(False, False)
     ventanaTorneo1.configure(bg="lightgray")
-    ventanaTorneo1.bind("<Escape>", lambda e:ventanaTorneo1.destroy())
+    ventanaTorneo1.bind("<Escape>", lambda e:(ventanaMain.deiconify(), ventanaTorneo1.destroy()))
     ventanaTorneo1.bind("<Return>", lambda e: crearTorneo())
     ventanaTorneo1.protocol("WM_DELETE_WINDOW", lambda: (ventanaTorneo1.destroy(), sys.exit(0)))
-    ventanaTorneo1.protocol("WM_TAKE_FOCUS", )
 
     #Widgets
     labelTitulo = tk.Label(ventanaTorneo1, text="Crear torneo", font= 20)
@@ -710,8 +709,8 @@ def interfazTorneo5(ventanaMain, nombreTorneo, datosTorneo):
     botonLimpiar = tk.Button(frame, text="Limpiar", font=20, command=limpiar)
     botonLimpiar.grid(row=6, column=0, padx=10, pady=10, sticky="ew")
 
-    botonCrear = tk.Button(frame, text="Editar", font=20,  command=editarTorneo)
-    botonCrear.grid(row=6, column=1, padx=10, pady=10, sticky="ew")
+    botonEditar = tk.Button(frame, text="Editar", font=20,  command=editarTorneo)
+    botonEditar.grid(row=6, column=1, padx=10, pady=10, sticky="ew")
 
     labelError = tk.Label(frame, text="", bg="gray")
     labelError.grid(row=7, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
@@ -746,6 +745,10 @@ def interfazTorneo6(ventanaMain, nombreTorneo, datosTorneo, estadisticasJugadore
                     tag = "Invitado"
                 else:
                     tag = "UJAP"
+                tabla.tag_configure("Oro", background="#DEDE2C", foreground="#FFFFFF")
+                tabla.tag_configure("Plata", background="#545050", foreground="#FFFFFF")
+                tabla.tag_configure("Bronce", background="#8D4416", foreground="#FFFFFF")
+                tabla.tag_configure("Femenina", background="#DE2C50", foreground="#FFFFFF")
                 tabla.tag_configure("Ingeniería", background="#00008B", foreground="#FFFFFF")
                 tabla.tag_configure("Sociales", background="#A52A2A", foreground="#FFFFFF")
                 tabla.tag_configure("Arquitectura", background="#402169", foreground="#FFFFFF")
@@ -766,13 +769,20 @@ def interfazTorneo6(ventanaMain, nombreTorneo, datosTorneo, estadisticasJugadore
                 participantes = len(datos) - posiciones
                                                         #       [Nombre y Apellido], Genero, Facultad,        Puntos,                Desempates,                                                                                              Elo,                                                                                     Victorias,                                 Medallas,                Torneos,
                 if posiciones <= 2:
+                    if posiciones == 0:
+                        tag = "Oro"
+                    elif posiciones == 1:
+                        tag = "Plata"
+                    else:
+                        tag = "Bronce"
                     tabla.insert("", tk.END, values=(posiciones+1, registro[0], registro[1], registro[2], registro[7], (f"{registro[8]}  {registro[9]}"), (f"{registro[3]}({"+" if int((estadisticasJugadores[indice][2]))+participantes > 0 else ""}{int(estadisticasJugadores[indice][2])+participantes})"), (f"{registro[4]}(+{estadisticasJugadores[indice][1]})"), (f"{registro[5]}(+1)")), tags=(tag))
-                    bd.actualizarDatosJugador(registro[0], (registro[3]+(int(estadisticasJugadores[indice][2])+participantes)), (int(registro[4])+int(estadisticasJugadores[indice][1])), (int(registro[6])+1), (int(registro[5])+1))
+                    bd.actualizarDatosJugador(registro[0], (registro[3]+(int(estadisticasJugadores[indice][2])+participantes)), (int(registro[4])+int(estadisticasJugadores[indice][1])), (int(registro[6])+1), (int(registro[5])+1), tag)
                     posiciones += 1
                     participantes -= 1
                 elif femenino == True and registro[1] == "F":
+                    tag = "Femenina"
                     tabla.insert("", tk.END, values=(posiciones+1, registro[0], registro[1], registro[2], registro[7], (f"{registro[8]}  {registro[9]}"),(f"{registro[3]}({"+" if int((estadisticasJugadores[indice][2]))+participantes > 0 else ""}{int(estadisticasJugadores[indice][2])+participantes})"), (f"{registro[4]}(+{estadisticasJugadores[indice][1]})"), (f"{registro[5]}(+1)")), tags=(tag))
-                    bd.actualizarDatosJugador(registro[0], (registro[3]+(int(estadisticasJugadores[indice][2])+participantes)), (int(registro[4])+int(estadisticasJugadores[indice][1])), (int(registro[6])+1), (int(registro[5])+1))
+                    bd.actualizarDatosJugador(registro[0], (registro[3]+(int(estadisticasJugadores[indice][2])+participantes)), (int(registro[4])+int(estadisticasJugadores[indice][1])), (int(registro[6])+1), (int(registro[5])+1), "Otra")
                     posiciones += 1
                     participantes -= 1
                     femenino = False
@@ -796,7 +806,7 @@ def interfazTorneo6(ventanaMain, nombreTorneo, datosTorneo, estadisticasJugadore
         messagebox.showinfo("Información Torneo:", f" Nombre: {datosTorneo[0]} \n Fecha: {datosTorneo[1]} \n Participantes: {datosTorneo[2]} \n Rondas: {datosTorneo[3]} \n Invitados: {"Si" if datosTorneo[4] == "True" else "No"} \n Descripción: {"Ninguna" if datosTorneo[5] == "" else datosTorneo[5]}")
 
     def guardarTorneo():
-        bd.agregarDatosListaTorneos(datosTorneo[0], datosTorneo[1], datosTorneo[2], datosTorneo[3], datosTorneo[4], datosTorneo[5])
+        bd.agregarDatosListaTorneos(datosTorneo[0], datosTorneo[1].replace("-", "/"), datosTorneo[2], datosTorneo[3], datosTorneo[4], (f"{"Ninguna" if datosTorneo[5] == "" else datosTorneo[5]}"))
     #Ventana
     ventanaTorneo6 = tk.Toplevel(ventanaMain)
     ventanaTorneo6.title("Torneo")

@@ -89,7 +89,7 @@ def interfazJugadores1(ventanaMain):
     ventanaJugadores1.grab_set()
     ventanaJugadores1.resizable(False, False)
     ventanaJugadores1.configure(bg="lightgray")
-    ventanaJugadores1.bind("<Escape>", lambda e:ventanaJugadores1.withdraw())
+    ventanaJugadores1.bind("<Escape>", lambda e:(ventanaMain.deiconify(), ventanaJugadores1.destroy()))
     ventanaJugadores1.bind("<Double-Button-1>", lambda e:desseleccionarFila())
     ventanaJugadores1.protocol("WM_DELETE_WINDOW", lambda: (ventanaJugadores1.destroy(), sys.exit(0)))
 
@@ -235,7 +235,7 @@ def interfazJugadores2(ventanaMain):
     ventanaJugadores2 = tk.Toplevel(ventanaMain)
     ventanaJugadores2.title("Jugadores")
     anchoVentana = 400
-    altoVentana = 550
+    altoVentana = 525
     x = (ventanaJugadores2.winfo_screenwidth() - anchoVentana)//2
     y = (ventanaJugadores2.winfo_screenheight() - altoVentana)//2
     ventanaJugadores2.geometry(f"{anchoVentana}x{altoVentana}+{x}+{y}")
@@ -244,11 +244,12 @@ def interfazJugadores2(ventanaMain):
     ventanaJugadores2.grab_set()
     ventanaJugadores2.configure(bg="lightgray")
     ventanaJugadores2.bind("<Escape>", lambda e:(ventanaJugadores2.destroy(), interfazJugadores1(ventanaMain)))
+    ventanaJugadores2.bind("<Return>", lambda e: crearJugador())
     ventanaJugadores2.protocol("WM_DELETE_WINDOW", lambda: (ventanaJugadores2.destroy(), sys.exit(0)))
 
     #Widgets
     labelTitulo = tk.Label(ventanaJugadores2, text="Agregar Jugador", font= 20)
-    labelTitulo.pack(pady= 10)
+    labelTitulo.pack(pady=10)
 
     frame = tk.Frame(ventanaJugadores2, bd=10, bg="gray", width=500, height=500)
     frame.pack_propagate(False)
@@ -257,42 +258,42 @@ def interfazJugadores2(ventanaMain):
 
     checkValorNuevo = tk.IntVar()
     checkJugadorNuevo= tk.Checkbutton(frame, text="Jugador Nuevo", variable=checkValorNuevo, onvalue=1, offvalue=0, command=nuevoJugador)
-    checkJugadorNuevo.grid(row=0, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
+    checkJugadorNuevo.grid(row=0, column=0, columnspan=2, padx=10, pady=8, sticky="ew")
 
     labelNombreCompleto = tk.Label(frame, text="Nombre y Apellido", font= 20)
-    labelNombreCompleto.grid(row=1, column=0, padx=10, pady=10, sticky="ew")
+    labelNombreCompleto.grid(row=1, column=0, padx=10, pady=8, sticky="ew")
 
     labelGenero = tk.Label(frame, text="Género", font= 20)
-    labelGenero.grid(row=2, column=0, padx=10, pady=10, sticky="ew")
+    labelGenero.grid(row=2, column=0, padx=10, pady=8, sticky="ew")
 
     labelFacultad = tk.Label(frame, text="Facultad", font= 20)
-    labelFacultad.grid(row=3, column=0, padx=10, pady=10, sticky="ew")
+    labelFacultad.grid(row=3, column=0, padx=10, pady=8, sticky="ew")
 
     labelElo = tk.Label(frame, text="Elo", font= 20)
-    labelElo.grid(row=4, column=0, padx=10, pady=10, sticky="ew")
+    labelElo.grid(row=4, column=0, padx=10, pady=8, sticky="ew")
 
     labelVictorias = tk.Label(frame, text="Victorias", font= 20)
-    labelVictorias.grid(row=5, column=0, padx=10, pady=10, sticky="ew")
+    labelVictorias.grid(row=5, column=0, padx=10, pady=8, sticky="ew")
 
     labelTorneos = tk.Label(frame, text="Torneos", font= 20)
-    labelTorneos.grid(row=6, column=0, padx=10, pady=10, sticky="ew")
+    labelTorneos.grid(row=6, column=0, padx=10, pady=8, sticky="ew")
 
     labelTorneos = tk.Label(frame, text="Medallas", font= 20)
-    labelTorneos.grid(row=7, column=0, padx=10, pady=10, sticky="ew")
+    labelTorneos.grid(row=7, column=0, padx=10, pady=8, sticky="ew")
 
     entryNombreCompleto = tk.Entry(frame, font=20)
-    entryNombreCompleto.grid(row=1, column=1, padx=10, pady=10, sticky="ew")
+    entryNombreCompleto.grid(row=1, column=1, padx=10, pady=8, sticky="ew")
     entryNombreCompleto.focus()
 
     menuGeneros = tk.Menubutton(frame, text="Masculino", font=20)
-    menuGeneros.grid(row=2, column=1, padx=10, pady=10, sticky="ew")
+    menuGeneros.grid(row=2, column=1, padx=10, pady=8, sticky="ew")
     menuGenero = tk.Menu(menuGeneros, tearoff=0)
     menuGeneros.config(menu=menuGenero)
     menuGenero.add_command(label="Masculino", command=lambda:menuGeneros.config(text="Masculino"))
     menuGenero.add_command(label="Femenino", command=lambda:menuGeneros.config(text="Femenino"))
 
     menuFacultades = tk.Menubutton(frame, text="Ingeniería", font=20)
-    menuFacultades.grid(row=3, column=1, padx=10, pady=10, sticky="ew")
+    menuFacultades.grid(row=3, column=1, padx=10, pady=8, sticky="ew")
     menuFacultad = tk.Menu(menuFacultades, tearoff=0)
     menuFacultades.config(menu=menuFacultad)
     menuFacultad.add_command(label="Ingeniería", command=lambda:menuFacultades.config(text="Ingeniería"))
@@ -304,25 +305,25 @@ def interfazJugadores2(ventanaMain):
     menuFacultad.add_command(label="UJAP", command=lambda:menuFacultades.config(text="UJAP"))
     
     entryElo = tk.Entry(frame, font=20)
-    entryElo.grid(row=4, column=1, padx=10, pady=10, sticky="ew")
+    entryElo.grid(row=4, column=1, padx=10, pady=8, sticky="ew")
 
     entryVictorias = tk.Entry(frame, font=20)
-    entryVictorias.grid(row=5, column=1, padx=10, pady=10, sticky="ew")
+    entryVictorias.grid(row=5, column=1, padx=10, pady=8, sticky="ew")
 
     entryTorneos = tk.Entry(frame, font=20)
-    entryTorneos.grid(row=6, column=1, padx=10, pady=10, sticky="ew")
+    entryTorneos.grid(row=6, column=1, padx=10, pady=8, sticky="ew")
 
     entryMedallas = tk.Entry(frame, font=20)
-    entryMedallas.grid(row=7, column=1, padx=10, pady=10, sticky="ew")
+    entryMedallas.grid(row=7, column=1, padx=10, pady=8, sticky="ew")
 
     botonLimpiar = tk.Button(frame, text="Limpiar", font=20, command=limpiar) 
-    botonLimpiar.grid(row=8, column=0, padx=10, pady=10, sticky="ew")
+    botonLimpiar.grid(row=8, column=0, padx=10, pady=8, sticky="ew")
 
     botonAgregar = tk.Button(frame, text="Agregar", font=20,  command=crearJugador)
-    botonAgregar.grid(row=8, column=1, padx=10, pady=10, sticky="ew")
+    botonAgregar.grid(row=8, column=1, padx=10, pady=8, sticky="ew")
 
     labelError = tk.Label(frame, text="", bg="gray")
-    labelError.grid(row=9, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
+    labelError.grid(row=9, column=0, columnspan=2, padx=10, pady=8, sticky="ew")
 
 """
 def interfazJugadores3():
@@ -420,21 +421,21 @@ def interfazJugadores4(ventanaMain, nombreJugador, gen, fac, el, vict, torn, med
         if vl.validarEntero(entryElo.get()) and len(vl.validarEntero2(entryElo.get())) == 4:
             elo = entryElo.get()
         else:
-            labelError.config(text="!!El elo debe ser un numero \n entero positivo de 4 dígitos", bg="lightgray", font=10)
+            labelError.config(text="!!El elo debe ser un numero \n entero positivo de 4 dígitos!!", bg="lightgray", font=10)
             labelError.after(3000, lambda:labelError.config(text="", bg="gray"))
             return
         
         if vl.validarEntero(entryVictorias.get()) and len(vl.validarEntero2(entryVictorias.get())) <= 2:
             victorias = entryVictorias.get()
         else:
-            labelError.config(text="!!El número de victorias debe ser un numero \n entero positivo de maximo 2 dígitos", bg="lightgray", font=10)
+            labelError.config(text="!!El número de victorias debe ser un numero \n entero positivo de maximo 2 dígitos!!", bg="lightgray", font=10)
             labelError.after(3000, lambda:labelError.config(text="", bg="gray"))
             return
         
         if vl.validarEntero(entryTorneos.get()) and len(vl.validarEntero2(entryTorneos.get())) <= 2:
             torneos = entryTorneos.get()
         else:
-            labelError.config(text="!!El número de torneos debe ser un numero \n entero positivo de maximo 2 dígitos", bg="lightgray", font=10)
+            labelError.config(text="!!El número de torneos debe ser un numero \n entero positivo de maximo 2 dígitos!!", bg="lightgray", font=10)
             labelError.after(3000, lambda:labelError.config(text="", bg="gray"))
             return
         
@@ -442,11 +443,11 @@ def interfazJugadores4(ventanaMain, nombreJugador, gen, fac, el, vict, torn, med
             if int(entryMedallas.get()) <= int(entryTorneos.get()):
                 medallas = entryMedallas.get()
             else:
-                labelError.config(text="!!El número de medallas debe ser \n menor o igual al número de torneos", bg="lightgray", font=10)
+                labelError.config(text="!!El número de medallas debe ser \n menor o igual al número de torneos!!", bg="lightgray", font=10)
                 labelError.after(3000, lambda:labelError.config(text="", bg="gray"))
                 return
         else:
-            labelError.config(text="!!El número de medallas debe ser un numero \n entero positivo de maximo 2 dígitos", bg="lightgray", font=10)
+            labelError.config(text="!!El número de medallas debe ser un numero \n entero positivo de maximo 2 dígitos!!", bg="lightgray", font=10)
             labelError.after(3000, lambda:labelError.config(text="", bg="gray"))
             return
 
@@ -482,6 +483,7 @@ def interfazJugadores4(ventanaMain, nombreJugador, gen, fac, el, vict, torn, med
     ventanaJugadores4.grab_set()
     ventanaJugadores4.configure(bg="lightgray")
     ventanaJugadores4.bind("<Escape>", lambda e:(ventanaJugadores4.destroy(), interfazJugadores1(ventanaMain)))
+    ventanaJugadores4.bind("<Return>", lambda e: editarJugador())
     ventanaJugadores4.protocol("WM_DELETE_WINDOW", lambda: (ventanaJugadores4.destroy(), sys.exit(0)))
 
     #Widgets

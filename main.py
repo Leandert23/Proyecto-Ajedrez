@@ -1,7 +1,6 @@
 import tkinter as tk
 import torneo, datos, jugadores, baseDatos
 import sys
-
 ventanaMain = tk.Tk()
 ventanaMain.title("Ajedrez")
 anchoVentana = 500
@@ -22,9 +21,7 @@ def interfazJugadores():
 
 def interfazDatos():
     ventanaMain.withdraw()
-    datos.interfazDatos2(ventanaMain)    
-
-
+    datos.interfazDatos3(ventanaMain)   
 botonTorneo = tk.Button(ventanaMain, text= "Nuevo Torneo", bg="gray", fg="black", command= interfazTorneo, font=30)
 botonTorneo.pack(padx=50, pady= 10, fill=tk.BOTH, expand=True)
 botonJugadores = tk.Button(ventanaMain, text= "Jugadores", bg="gray", fg="black", command= interfazJugadores, font=30)
@@ -35,6 +32,7 @@ etiquetaVersion = tk.Label(ventanaMain, text="Versión 1.0", bg="lightgray", fg=
 
 baseDatos.crearTablaJugadores()
 baseDatos.crearTablaListaTorneos()
+baseDatos.crearTablaMedallas()
 ventanaMain.mainloop()
 
 

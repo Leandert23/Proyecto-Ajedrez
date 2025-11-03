@@ -23,3 +23,6 @@ DROP TABLE [Tabla]
 
 Ordenar jugadores por Elo y Victorias como Desempate
 SELECT * FROM Jugadores ORDER By Elo, Victorias DESC
+
+PyInstaller
+pyinstaller --name="TorneoAjedrez" --windowed --add-data="ajedrez.db;." main.py
