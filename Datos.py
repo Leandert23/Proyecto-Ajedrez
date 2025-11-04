@@ -165,6 +165,32 @@ def interfazDatos2(ventanaMain):
         for dato in tabla.get_children():
             tabla.delete(dato)
         cargarJugadores()"""
+    
+    def menu(evento):
+        fila = tabla.identify_row(evento.y)
+        if fila:
+            tabla.selection_set(fila)
+            menu.tk_popup(evento.x_root, evento.y_root)
+
+    def editarFila():
+        pass
+    
+    def borrarTorneo():
+        item = tabla.selection()
+        valores = tabla.item(item, 'values')
+        respuesta = messagebox.askyesno("Borrar", f"¿Estás seguro de borrar \n el torneo {valores[0]}?")
+        if respuesta:
+            tabla.delete(item)
+            bd.eliminarTorneo(valores[0]) 
+            cargarTorneos()
+    
+    def verTorneo():
+        fila = tabla.selection()
+        datos = tabla.item(fila, 'values')
+        ventanaDatos2.withdraw()
+        datosTorneo = (datos[0], datos[1], datos[2], datos[3], datos[4], datos[5])
+        nombreTorneo = f"{datos[0]}_{datos[1]}_P{datos[2]}_R{datos[3]}_{datos[4]}{"_" if datos[5] != "Ninguna" else ""}{datos[5] if datos[5] != "Ninguna" else ""}"
+        interfazDatos5(ventanaMain, nombreTorneo, datosTorneo)
 
     def desseleccionarFila():
         for fila in tabla.selection():
@@ -200,6 +226,7 @@ def interfazDatos2(ventanaMain):
     estilo.configure("Treeview", font= 20, rowheight=20)
     tabla = ttk.Treeview(frame, columns=("Nombre", "Fecha", "Participantes", "Rondas", "Invitados", "Descripción"),  show="headings")
     tabla.grid(row=0, column=0, columnspan=6, padx=5, pady=10, sticky="ew")
+    tabla.bind("<Button-3>", menu)
 
     tabla.column("Nombre", anchor=tk.CENTER, width=150)
     tabla.column("Fecha", anchor=tk.CENTER, width=100)
@@ -215,6 +242,11 @@ def interfazDatos2(ventanaMain):
     tabla.heading("Invitados", text="Invitados")
     tabla.heading("Descripción", text="Descripción")
 
+    menu = tk.Menu(ventanaDatos2, tearoff=0)
+    menu.add_command(label="Ver", command=verTorneo)
+    menu.add_command(label="Editar", command=editarFila)
+    menu.add_command(label="Borrar", command=borrarTorneo)
+
     labelTorneos = tk.Label(ventanaDatos2, text="Torneos: 0", bg="lightgray", fg="black", font=15)
     labelTorneos.pack(padx=10, pady=10, side=tk.LEFT)
 
@@ -223,8 +255,7 @@ def interfazDatos2(ventanaMain):
 def interfazDatos3(ventanaMain):
     #Funciones
     def cargarTabla():
-        datos = bd.consultarDatosJugadores("Medallas")
-        #bd.eliminarDatosMedallas()
+        datos = bd.consultarDatosJugadores()
         for registro in datos:
             bd.agregarDatosMedallas(registro)
         cargarJugadores()
@@ -496,6 +527,173 @@ def interfazDatos4(ventanaMain, nombreJugador, torneos, medall, o, pla, bro, otr
     labelError.grid(row=6, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
 
     insertarDatos()
+
+def interfazDatos5(ventanaMain, nombreTorneo, datosTorneo):
+    #Funciones
+    def cargarTabla():
+        for fila in tabla.get_children():
+            tabla.delete(fila)
+
+        if botonCambio.cget("text") == "Despues Torneo":
+            datos = bd.consultarDatosAntesTorneo("AT_"+nombreTorneo)
+        else:
+            datos = bd.consultarDatosDespuesTorneo("DT_"+nombreTorneo)
+
+        if len(datos) > 0:
+            labelJugadoresInscritos.config(text=f"Jugadores inscritos: {len(datos)}/{datosTorneo[2]}")
+        else:
+            return
+        if botonCambio.cget("text") == "Despues Torneo":
+            tabla.column("Col1", anchor=tk.CENTER, width=180)
+            tabla.column("Col2", anchor=tk.CENTER, width=70)
+            tabla.column("Col3", anchor=tk.CENTER, width=95)
+            tabla.column("Col4", anchor=tk.CENTER, width=45)
+            tabla.column("Col5", anchor=tk.CENTER, width=75)
+            tabla.column("Col6", anchor=tk.CENTER, width=75)
+            tabla.column("Col7", anchor=tk.CENTER, width=75)
+            tabla.column("Col8", anchor=tk.CENTER, width=60)
+            tabla.column("Col9", anchor=tk.CENTER, width=110)
+            
+            tabla.heading("Col1", text="Nombre y Apellido", command=lambda: print("b"))
+            tabla.heading("Col2", text="Genero")
+            tabla.heading("Col3", text="Facultad")
+            tabla.heading("Col4", text="Elo")
+            tabla.heading("Col5", text="Victorias")
+            tabla.heading("Col6", text="Tablas")
+            tabla.heading("Col7", text="Derrotas")
+            tabla.heading("Col8", text="Puntos")
+            tabla.heading("Col9", text="Desempates")
+        else:
+            tabla.column("Col1", anchor=tk.CENTER, width=35)
+            tabla.column("Col2", anchor=tk.CENTER, width=175)
+            tabla.column("Col3", anchor=tk.CENTER, width=70)
+            tabla.column("Col4", anchor=tk.CENTER, width=95)
+            tabla.column("Col5", anchor=tk.CENTER, width=60)
+            tabla.column("Col6", anchor=tk.CENTER, width=110)
+            tabla.column("Col7", anchor=tk.CENTER, width=85)
+            tabla.column("Col8", anchor=tk.CENTER, width=95)
+            tabla.column("Col9", anchor=tk.CENTER, width=100)
+            
+            tabla.heading("Col1", text="#", command=lambda: print("b"))
+            tabla.heading("Col2", text="Nombre y Apellido")
+            tabla.heading("Col3", text="Genero")
+            tabla.heading("Col4", text="Facultad")
+            tabla.heading("Col5", text="Puntos")
+            tabla.heading("Col6", text="Desempates")
+            tabla.heading("Col7", text="Elo(+/-)")
+            tabla.heading("Col8", text="Victorias(+)")
+            tabla.heading("Col9", text="Medallas(+)")
+        
+        posiciones = 1
+        femenino = True
+        if not datos is None:
+            for registro in datos:
+                tag = ""
+                if registro[2] == "Ingeniería":
+                    tag = "Ingeniería"
+                elif registro[2] == "Sociales":
+                    tag = "Sociales"
+                elif registro[2] == "Arquitectura":
+                    tag = "Arquitectura"
+                elif registro[2] == "Derecho":
+                    tag = "Derecho"
+                elif registro[2] == "Odontología":
+                    tag = "Odontología"
+                elif registro[2] == "Invitado":
+                    tag = "Invitado"
+                else:
+                    tag = "UJAP"
+
+                tabla.tag_configure("Oro", background="#DEDE2C", foreground="#FFFFFF")
+                tabla.tag_configure("Plata", background="#545050", foreground="#FFFFFF")
+                tabla.tag_configure("Bronce", background="#8D4416", foreground="#FFFFFF")
+                tabla.tag_configure("Femenina", background="#DE2C50", foreground="#FFFFFF")
+                tabla.tag_configure("Ingeniería", background="#00008B", foreground="#FFFFFF")
+                tabla.tag_configure("Sociales", background="#A52A2A", foreground="#FFFFFF")
+                tabla.tag_configure("Arquitectura", background="#402169", foreground="#FFFFFF")
+                tabla.tag_configure("Derecho", background="#000000", foreground="#FFFFFF")
+                tabla.tag_configure("Odontología", background="#888888", foreground="#FFFFFF")
+                tabla.tag_configure("Invitado", background="#73bf00", foreground="#FFFFFF")
+                tabla.tag_configure("UJAP", background="#E54A27", foreground="#FFFFFF")
+                
+                if botonCambio.cget("text") == "Despues Torneo":
+                    tabla.insert("", tk.END, values=(registro[0], registro[1], registro[2], registro[3], registro[4] , registro[5], registro[6], registro[7], (f"{registro[8]}  {registro[9]}")), tags=(tag))
+                else:
+                    if posiciones <= 3:
+                        if posiciones == 1:
+                            tag = "Oro"
+                        elif posiciones == 2:
+                            tag = "Plata"
+                        else:
+                            tag = "Bronce"                   #         Nombre       Genero      Facultad        Puntos                   Desempates             Elo       Victorias    Medallas
+                        tabla.insert("", tk.END, values=(posiciones, registro[0], registro[1], registro[2], registro[7], (f"{registro[8]}  {registro[9]}"), registro[3], registro[4], registro[5]), tags=(tag))
+                        posiciones += 1
+                    elif femenino == True and registro[1] == "F":
+                        tabla.insert("", tk.END, values=(posiciones, registro[0], registro[1], registro[2], registro[7], (f"{registro[8]}  {registro[9]}"), registro[3], registro[4], registro[5]), tags=(tag))
+                        posiciones += 1
+                        femenino = False
+                    else:
+                        tabla.insert("", tk.END, values=(posiciones, registro[0], registro[1], registro[2], registro[7], (f"{registro[8]}  {registro[9]}"), registro[3], registro[4], registro[5]), tags=(tag))
+                        posiciones += 1
+                
+        if len(datos) > 10:
+            scrollbar = ttk.Scrollbar(frame, orient=tk.VERTICAL, command=tabla.yview)
+            tabla.configure(yscroll=scrollbar.set)
+            scrollbar.grid(row=0, column=10, sticky="ns")
+
+    def desseleccionarFila():
+        for fila in tabla.selection():
+            tabla.selection_remove(fila)
+
+    def vv():
+        tabla.column("Nombre y Apellido", anchor=tk.CENTER, width=200)
+        tabla.heading("Nombre y Apellido", text="Nombre")
+
+
+    #Ventana
+    ventanaDatos5 = tk.Toplevel(ventanaMain)
+    ventanaDatos5.title("Torneo")
+    anchoVentana = 850
+    altoVentana = 450
+    x = (ventanaDatos5.winfo_screenwidth() - anchoVentana)//2
+    y = (ventanaDatos5.winfo_screenheight() - altoVentana)//2
+    ventanaDatos5.geometry(f"{anchoVentana}x{altoVentana}+{x}+{y}")
+    ventanaDatos5.focus_force()
+    ventanaDatos5.grab_set()
+    ventanaDatos5.resizable(False, False)
+    ventanaDatos5.configure(bg="lightgray")
+    ventanaDatos5.bind("<Escape>", lambda e:(ventanaDatos5.destroy(), interfazDatos2(ventanaMain)))
+    ventanaDatos5.bind("<Double-Button-1>", lambda e: desseleccionarFila())
+    ventanaDatos5.protocol("WM_DELETE_WINDOW", lambda: (ventanaDatos5.destroy(), sys.exit(0)))
+
+    #Widgets
+    labelTitulo = tk.Label(ventanaDatos5, text=f"{datosTorneo[0]}", font= 20)
+    labelTitulo.pack(pady= 10)
+
+    frame = tk.Frame(ventanaDatos5, bd=10, bg="gray", width=500, height=500)
+    frame.pack_propagate(False)
+    frame.pack()
+    frame.grid_columnconfigure(1, weight=1)
+
+    estilo = ttk.Style()
+    estilo.configure("Treeview.Heading", font= 20)
+    estilo.configure("Treeview", font= 15, rowheight=30)
+    tabla = ttk.Treeview(frame, columns=("Col1", "Col2", "Col3", "Col4", "Col5", "Col6", "Col7", "Col8", "Col9"),  show="headings")
+    tabla.grid(row=0, column=0, columnspan=9, padx=5, pady=10, sticky="ew") 
+
+    labelJugadoresInscritos = tk.Label(ventanaDatos5, text=f"Jugadores inscritos: 0/{datosTorneo[2]}", bg="lightgray", font=20)
+    labelJugadoresInscritos.pack(padx=10, pady=10, side=tk.LEFT)
+    
+    labelRondas = tk.Label(ventanaDatos5, text=f"Rondas: {datosTorneo[3]} ", bg="lightgray", font=20)
+    labelRondas.pack(padx=10, pady=10, side=tk.LEFT)
+
+    labelInvitados = tk.Label(ventanaDatos5, text=f"Invitados: {"Si" if datosTorneo[4] == "True" else "No"}", bg="lightgray", font=20)
+    labelInvitados.pack(padx=10, pady=10, side=tk.LEFT)
+
+    botonCambio = tk.Button(ventanaDatos5, text="Despues Torneo", bg="lightgray", font=20, command=lambda:(botonCambio.config(text=f"{"Antes Torneo" if botonCambio.cget("text") == "Despues Torneo" else "Despues Torneo"}"), cargarTabla()))
+    botonCambio.pack(padx=10, pady=10, side=tk.RIGHT)
+
+    cargarTabla()
 
 #Cargar jugadores con medallas de la tabla Jugadores a la tabla Medallas
 #Al momento de crear un Jugador con medalla se agrege automaticamente al la tabla Medallas

@@ -16,7 +16,7 @@ def interfazTorneo1(ventanaMain):
             labelError.after(3000, lambda:labelError.config(text="", bg="gray"))
             return
         
-        fecha = entryFecha.get_date()
+        fecha = str(entryFecha.get_date()).replace("-", "/")
 
         if vl.validarEntero(spinboxParticipantes.get()):
             participantes = spinboxParticipantes.get()
@@ -68,7 +68,7 @@ def interfazTorneo1(ventanaMain):
     ventanaTorneo1 = tk.Toplevel(ventanaMain)
     ventanaTorneo1.title("Torneo")
     anchoVentana = 400
-    altoVentana = 450
+    altoVentana = 475
     x = (ventanaTorneo1.winfo_screenwidth() - anchoVentana)//2
     y = (ventanaTorneo1.winfo_screenheight() - altoVentana)//2
     ventanaTorneo1.geometry(f"{anchoVentana}x{altoVentana}+{x}+{y}")
@@ -622,7 +622,7 @@ def interfazTorneo5(ventanaMain, nombreTorneo, datosTorneo):
             labelError.after(3000, lambda:labelError.config(text="", bg="gray"))
             return
         
-        respuesta = bd.actualizarAntesTorneo(nombreTorneo, nombre, fecha, participantes, rondas, invitados, descripcion)
+        respuesta = bd.editarTablaAntesTorneo(nombreTorneo, nombre, fecha, participantes, rondas, invitados, descripcion)
         if respuesta == True:
             labelError.config(text="!!Ya existe un torneo con estos datos \n por favor ingrese uno nuevo!!", bg="lightgray", font=12)
             labelError.after(3000, lambda:labelError.config(text="", bg="gray"))
@@ -647,7 +647,7 @@ def interfazTorneo5(ventanaMain, nombreTorneo, datosTorneo):
     ventanaTorneo5 = tk.Toplevel(ventanaMain)
     ventanaTorneo5.title("Torneo")
     anchoVentana = 400
-    altoVentana = 450
+    altoVentana = 475
     x = (ventanaTorneo5.winfo_screenwidth() - anchoVentana)//2
     y = (ventanaTorneo5.winfo_screenheight() - altoVentana)//2
     ventanaTorneo5.geometry(f"{anchoVentana}x{altoVentana}+{x}+{y}")
@@ -767,7 +767,7 @@ def interfazTorneo6(ventanaMain, nombreTorneo, datosTorneo, estadisticasJugadore
                                 break
          
                 participantes = len(datos) - posiciones
-                                                        #       [Nombre y Apellido], Genero, Facultad,        Puntos,                Desempates,                                                                                              Elo,                                                                                     Victorias,                                 Medallas,                Torneos,
+                                                        #       [Nombre y Apellido], Genero, Facultad,        Puntos,                Desempates,                                                                                              Elo,                                                                                                          Victorias,                                                         Medallas,                Torneos,
                 if posiciones <= 2:
                     if posiciones == 0:
                         tag = "Oro"
@@ -775,20 +775,23 @@ def interfazTorneo6(ventanaMain, nombreTorneo, datosTorneo, estadisticasJugadore
                         tag = "Plata"
                     else:
                         tag = "Bronce"
-                    tabla.insert("", tk.END, values=(posiciones+1, registro[0], registro[1], registro[2], registro[7], (f"{registro[8]}  {registro[9]}"), (f"{registro[3]}({"+" if int((estadisticasJugadores[indice][2]))+participantes > 0 else ""}{int(estadisticasJugadores[indice][2])+participantes})"), (f"{registro[4]}(+{estadisticasJugadores[indice][1]})"), (f"{registro[5]}(+1)")), tags=(tag))
-                    bd.actualizarDatosJugador(registro[0], (registro[3]+(int(estadisticasJugadores[indice][2])+participantes)), (int(registro[4])+int(estadisticasJugadores[indice][1])), (int(registro[6])+1), (int(registro[5])+1), tag)
+                    tabla.insert("", tk.END, values=(posiciones+1, registro[0], registro[1], registro[2], registro[7], (f"{registro[8]}  {registro[9]}"), (f"{registro[3]}({"+" if int((estadisticasJugadores[indice][2]))+participantes > 0 else ""}{int(estadisticasJugadores[indice][2])+participantes})"), (f"{registro[4]}{f'(+{estadisticasJugadores[indice][1]})' if int(estadisticasJugadores[indice][1]) > 0 else "" }"), (f"{registro[5]}(+1)")), tags=(tag))
+                    bd.actualizarDatosJugador(registro[0], (int(registro[3])+(int(estadisticasJugadores[indice][2])+participantes)), (int(registro[4])+int(estadisticasJugadores[indice][1])), (int(registro[6])+1), (int(registro[5])+1), tag)
+                    bd.actualizarTablaDespuesTorneo(nombreTorneo, registro[0], (f"{registro[3]}({"+" if int((estadisticasJugadores[indice][2]))+participantes > 0 else ""}{int(estadisticasJugadores[indice][2])+participantes})"), (f"{registro[4]}{f'(+{estadisticasJugadores[indice][1]})' if int(estadisticasJugadores[indice][1]) > 0 else "" }"), (f"{registro[5]}(+1)"))
                     posiciones += 1
                     participantes -= 1
                 elif femenino == True and registro[1] == "F":
                     tag = "Femenina"
-                    tabla.insert("", tk.END, values=(posiciones+1, registro[0], registro[1], registro[2], registro[7], (f"{registro[8]}  {registro[9]}"),(f"{registro[3]}({"+" if int((estadisticasJugadores[indice][2]))+participantes > 0 else ""}{int(estadisticasJugadores[indice][2])+participantes})"), (f"{registro[4]}(+{estadisticasJugadores[indice][1]})"), (f"{registro[5]}(+1)")), tags=(tag))
-                    bd.actualizarDatosJugador(registro[0], (registro[3]+(int(estadisticasJugadores[indice][2])+participantes)), (int(registro[4])+int(estadisticasJugadores[indice][1])), (int(registro[6])+1), (int(registro[5])+1), "Otra")
+                    tabla.insert("", tk.END, values=(posiciones+1, registro[0], registro[1], registro[2], registro[7], (f"{registro[8]}  {registro[9]}"),(f"{registro[3]}({"+" if int((estadisticasJugadores[indice][2]))+participantes > 0 else ""}{int(estadisticasJugadores[indice][2])+participantes})"), (f"{registro[4]}{f'(+{estadisticasJugadores[indice][1]})' if int(estadisticasJugadores[indice][1]) > 0 else "" }"), (f"{registro[5]}(+1)")), tags=(tag))
+                    bd.actualizarDatosJugador(registro[0], (int(registro[3])+(int(estadisticasJugadores[indice][2])+participantes)), (int(registro[4])+int(estadisticasJugadores[indice][1])), (int(registro[6])+1), (int(registro[5])+1), "Otra")
+                    bd.actualizarTablaDespuesTorneo(nombreTorneo, registro[0], (f"{registro[3]}({"+" if int((estadisticasJugadores[indice][2]))+participantes > 0 else ""}{int(estadisticasJugadores[indice][2])+participantes})"), (f"{registro[4]}{f'(+{estadisticasJugadores[indice][1]})' if int(estadisticasJugadores[indice][1]) > 0 else "" }"), (f"{registro[5]}(+1)"))
                     posiciones += 1
                     participantes -= 1
                     femenino = False
                 else:
-                    tabla.insert("", tk.END, values=(posiciones+1, registro[0], registro[1], registro[2], registro[7], (f"{registro[8]}  {registro[9]}"), (f"{registro[3]}({"+" if int((estadisticasJugadores[indice][2]))+participantes > 0 else ""}{int(estadisticasJugadores[indice][2])+participantes})"), (f"{registro[4]}(+{estadisticasJugadores[indice][1]})"), registro[5]), tags=(tag))
-                    bd.actualizarDatosJugador(registro[0], (registro[3]+(int(estadisticasJugadores[indice][2])+participantes)), (int(registro[4])+int(estadisticasJugadores[indice][1])), (int(registro[6])+1), int(registro[5]))
+                    tabla.insert("", tk.END, values=(posiciones+1, registro[0], registro[1], registro[2], registro[7], (f"{registro[8]}  {registro[9]}"), (f"{registro[3]}({"+" if int((estadisticasJugadores[indice][2]))+participantes > 0 else ""}{int(estadisticasJugadores[indice][2])+participantes})"), (f"{registro[4]}{f'(+{estadisticasJugadores[indice][1]})' if int(estadisticasJugadores[indice][1]) > 0 else "" }"), registro[5]), tags=(tag))
+                    bd.actualizarDatosJugador(registro[0], (int(registro[3])+(int(estadisticasJugadores[indice][2])+participantes)), (int(registro[4])+int(estadisticasJugadores[indice][1])), (int(registro[6])+1), int(registro[5]))
+                    bd.actualizarTablaDespuesTorneo(nombreTorneo, registro[0], (f"{registro[3]}({"+" if int((estadisticasJugadores[indice][2]))+participantes > 0 else ""}{int(estadisticasJugadores[indice][2])+participantes})"), (f"{registro[4]}{f'(+{estadisticasJugadores[indice][1]})' if int(estadisticasJugadores[indice][1]) > 0 else "" }"), registro[5])
                     posiciones += 1
                     participantes -= 1
                 #tabla.insert("", tk.END, values=(posiciones, registro[0], registro[1], registro[2], (f"{registro[3] + estadisticasJugadores[0]}"), (f"{registro[4] + estadisticasJugadores[1]}"),(f"{registro[5] + estadisticasJugadores[1]}")), tags=(tag))
@@ -806,7 +809,7 @@ def interfazTorneo6(ventanaMain, nombreTorneo, datosTorneo, estadisticasJugadore
         messagebox.showinfo("Información Torneo:", f" Nombre: {datosTorneo[0]} \n Fecha: {datosTorneo[1]} \n Participantes: {datosTorneo[2]} \n Rondas: {datosTorneo[3]} \n Invitados: {"Si" if datosTorneo[4] == "True" else "No"} \n Descripción: {"Ninguna" if datosTorneo[5] == "" else datosTorneo[5]}")
 
     def guardarTorneo():
-        bd.agregarDatosListaTorneos(datosTorneo[0], datosTorneo[1].replace("-", "/"), datosTorneo[2], datosTorneo[3], datosTorneo[4], (f"{"Ninguna" if datosTorneo[5] == "" else datosTorneo[5]}"))
+        bd.agregarDatosListaTorneos(datosTorneo[0], datosTorneo[1], datosTorneo[2], datosTorneo[3], datosTorneo[4], (f"{"Ninguna" if datosTorneo[5] == "" else datosTorneo[5]}"))
     #Ventana
     ventanaTorneo6 = tk.Toplevel(ventanaMain)
     ventanaTorneo6.title("Torneo")
@@ -837,7 +840,7 @@ def interfazTorneo6(ventanaMain, nombreTorneo, datosTorneo, estadisticasJugadore
     tabla = ttk.Treeview(frame, columns=("#", "Nombre y Apellido", "Genero", "Facultad", "Puntos", "Desempates", "Elo(+/-)", "Victorias(+)", "Medallas(+)"),show="headings")
     tabla.grid(row=0, column=0, columnspan=9, padx=5, pady=10, sticky="ew")
 
-    tabla.column("#", anchor=tk.CENTER, width=30)
+    tabla.column("#", anchor=tk.CENTER, width=35)
     tabla.column("Nombre y Apellido", anchor=tk.CENTER, width=180)
     tabla.column("Genero", anchor=tk.CENTER, width=60)
     tabla.column("Facultad", anchor=tk.CENTER, width=95)
@@ -884,4 +887,3 @@ def filtrarTorneos():
 #5to poder
 #El nombre de la rosa
 #Farenheit 451 1966/2018
-

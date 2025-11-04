@@ -6,10 +6,10 @@ import sys
 
 def interfazJugadores1(ventanaMain):
     #Funciones
-    def cargarJugadores():
+    def cargarJugadores(filtro="Nombre"):
         for fila in tabla.get_children():
             tabla.delete(fila)
-        datos = bd.consultarDatosJugadores()
+        datos = bd.consultarDatosJugadores(filtro)
 
         if len(datos) > 0:
             labelJugadores.config(text=f"Jugadores: {len(datos)}")
@@ -117,13 +117,13 @@ def interfazJugadores1(ventanaMain):
     tabla.column("Torneos", anchor=tk.CENTER, width=70)
     tabla.column("Medallas", anchor=tk.CENTER, width=70)
 
-    tabla.heading("Nombre y Apellido", text="Nombre y Apellido")
-    tabla.heading("Género", text="Género")
-    tabla.heading("Facultad", text="Facultad")
-    tabla.heading("Elo", text="Elo")
-    tabla.heading("Victorias", text="Victorias")
-    tabla.heading("Torneos", text="Torneos")
-    tabla.heading("Medallas", text="Medallas")
+    tabla.heading("Nombre y Apellido", text="Nombre y Apellido", command=lambda:cargarJugadores())
+    tabla.heading("Género", text="Género", command=lambda:cargarJugadores("Genero"))
+    tabla.heading("Facultad", text="Facultad", command=lambda:cargarJugadores("Facultad"))
+    tabla.heading("Elo", text="Elo", command=lambda:cargarJugadores("Elo"))
+    tabla.heading("Victorias", text="Victorias", command=lambda:cargarJugadores("Victorias"))
+    tabla.heading("Torneos", text="Torneos", command=lambda:cargarJugadores("Torneos"))
+    tabla.heading("Medallas", text="Medallas", command=lambda:cargarJugadores("Medallas"))
 
     menu = tk.Menu(ventanaJugadores1, tearoff=0)
     menu.add_command(label="Editar", command=editarFila)
