@@ -20,7 +20,6 @@ def consultarDatosJugadores(filtro=None):
         elif filtro == "Medallas":
             instrucccion = "SELECT * FROM Jugadores ORDER BY Medallas DESC"
         else:
-            print("j")
             instrucccion = "SELECT [Nombre y Apellido], Facultad, Torneos, Medallas FROM Jugadores Where Medallas > 0 ORDER BY Medallas DESC, Torneos ASC"
             
         cursor.execute(instrucccion)
@@ -86,11 +85,23 @@ def consultarDatosDespuesTorneo(nombreTorneo):
         conexion.commit()
         conexion.close()
 
-def consultarDatosListaTorneos():
+def consultarDatosListaTorneos(filtro):
     try:
         conexion = sql.connect("ajedrez.db")
         cursor = conexion.cursor()
-        instrucccion = "SELECT * FROM listaTorneos ORDER BY Nombre COLLATE NOCASE ASC"
+        if filtro == "Nombre":
+            instrucccion = "SELECT * FROM listaTorneos ORDER BY Nombre COLLATE NOCASE ASC"
+        elif filtro == "Participantes":
+            instrucccion = "SELECT * FROM listaTorneos ORDER BY Participantes DESC"
+        elif filtro == "Rondas":
+            instrucccion = "SELECT * FROM listaTorneos ORDER BY Rondas DESC"
+        elif filtro == "Invitados":
+            instrucccion = "SELECT * FROM listaTorneos ORDER BY Invitados COLLATE NOCASE DESC"
+        elif filtro == "Descripcion":
+            instrucccion = "SELECT * FROM listaTorneos ORDER BY Descripcion COLLATE NOCASE ASC"
+        else:
+            instrucccion = "SELECT * FROM listaTorneos ORDER BY Fecha COLLATE NOCASE DESC"
+
         cursor.execute(instrucccion)
         resultados = cursor.fetchall()
         return resultados
@@ -105,9 +116,9 @@ def consultarDatosRanking(filtro):
         conexion = sql.connect("ajedrez.db")
         cursor = conexion.cursor()
         if filtro == "Femenino":
-            instrucccion = "SELECT * FROM Jugadores WHERE Genero = 'F' ORDER BY Elo DESC, Victorias DESC, Medallas DESC"
+            instrucccion = "SELECT * FROM Jugadores WHERE Facultad != 'Invitado' AND Genero = 'F' ORDER BY Elo DESC, Victorias DESC, Medallas DESC"
         else:
-            instrucccion = "SELECT * FROM Jugadores ORDER BY Elo DESC, Victorias DESC, Medallas DESC"
+            instrucccion = "SELECT * FROM Jugadores WHERE Facultad != 'Invitado' ORDER BY Elo DESC, Victorias DESC, Medallas DESC"
         cursor.execute(instrucccion)
         resultados = cursor.fetchall()
         return resultados
@@ -117,11 +128,31 @@ def consultarDatosRanking(filtro):
         conexion.commit()
         conexion.close()
 
-def consultarDatosMedallas():
+def consultarDatosMedallas(filtro):
     try:
         conexion = sql.connect("ajedrez.db")
         cursor = conexion.cursor()
-        instrucccion = "SELECT * FROM Medallas ORDER BY Medallas DESC, Torneos ASC, Oro DESC, Plata DESC, Bronce DESC, Otra DESC"
+        if filtro == "Nombre":
+            instrucccion = "SELECT * FROM Medallas ORDER BY [Nombre y Apellido] COLLATE NOCASE ASC"
+        elif filtro == "Facultad":
+            instrucccion = "SELECT * FROM Medallas ORDER BY Facultad COLLATE NOCASE ASC"
+        elif filtro == "Torneos":
+            instrucccion = "SELECT * FROM Medallas ORDER BY Torneos DESC"
+        elif filtro == "Medallas":
+            instrucccion = "SELECT * FROM Medallas ORDER BY Medallas DESC"
+        elif filtro == "Oro":
+            instrucccion = "SELECT * FROM Medallas ORDER BY Oro DESC"
+        elif filtro == "Plata":
+            instrucccion = "SELECT * FROM Medallas ORDER BY Plata DESC"
+        elif filtro == "Bronce":
+            instrucccion = "SELECT * FROM Medallas ORDER BY Bronce DESC"
+        elif filtro == "Otra":
+            instrucccion = "SELECT * FROM Medallas ORDER BY Otra DESC"
+        elif filtro == "Estado":
+            instrucccion = "SELECT * FROM Medallas ORDER BY Estado DESC"
+        else:
+            instrucccion = "SELECT * FROM Medallas ORDER BY Medallas DESC, Torneos ASC, Oro DESC, Plata DESC, Bronce DESC, Otra DESC"
+
         cursor.execute(instrucccion)
         resultados = cursor.fetchall()
         return resultados
@@ -225,7 +256,7 @@ def crearTablaListaTorneos():
         cursor = conexion.cursor()
         instrucccion = f"""CREATE TABLE IF NOT EXISTS listaTorneos (
                                                                 Nombre TEXT,
-                                                                Fecha TEXT DEFAULT '00/00/00',
+                                                                Fecha TEXT DEFAULT '00))/00/00',
                                                                 Participantes INTEGER DEFAULT 0,
                                                                 Rondas INTEGER DEFAULT 0,
                                                                 Invitados TEXT DEFAULT 'False',
@@ -252,6 +283,7 @@ def crearTablaMedallas():
                                                                 Plata INTEGER DEFAULT 0,
                                                                 Bronce INTEGER DEFAULT 0,
                                                                 Otra INTEGER DEFAULT 0,
+                                                                Estado TEXT DEFAUL '✖',
                                                                 PRIMARY KEY('Nombre y Apellido')
                                                                 )"""
         cursor.execute(instrucccion)
@@ -372,7 +404,22 @@ def editarTablaAntesTorneo(nombreViejo, nombre, fecha, participantes, rondas, in
         cursor.execute(instrucccion)
         return nombreNuevo
     except Exception as e:
-        print("Error al agregar datos (actualizarAntesTorneo):", e)
+        print("Error al agregar datos (editarTablaAntesTorneo):", e)
+        return True
+    finally:
+        conexion.commit()
+        conexion.close()
+
+def editarTablaDespuesTorneo(nombreViejo, nombre, fecha, participantes, rondas, invitados, descripcion):
+    try:
+        conexion = sql.connect("ajedrez.db")
+        cursor = conexion.cursor()
+        nombreNuevo = f"DT_{nombre}_{fecha}_P{participantes}_R{rondas}_{invitados}{"_" if descripcion != "" else ""}{descripcion}".replace("-", "/")
+        instrucccion = f"ALTER TABLE '{nombreViejo}' RENAME TO '{nombreNuevo}'"
+        cursor.execute(instrucccion)
+        return nombreNuevo
+    except Exception as e:
+        print("Error al agregar datos (editarTablaDespuesTorneo:", e)
         return True
     finally:
         conexion.commit()
@@ -399,7 +446,7 @@ def actualizarMedallasJugador(nombreJugador, medallas, oro, plata, bronce, otra)
     try:
         conexion = sql.connect("ajedrez.db")
         cursor = conexion.cursor()
-        instrucccion = f"UPDATE Medallas SET Medallas = {medallas}, Oro = {oro}, Plata = {plata}, Bronce = {bronce}, Otra = {otra} Where [Nombre y Apellido] = '{nombreJugador}'"
+        instrucccion = f"UPDATE Medallas SET Medallas = {medallas}, Oro = {oro}, Plata = {plata}, Bronce = {bronce}, Otra = {otra}, Estado = '✔' Where [Nombre y Apellido] = '{nombreJugador}'"
         cursor.execute(instrucccion)
         instrucccion = f"UPDATE Jugadores SET Medallas = {medallas} WHERE [Nombre y Apellido] = '{nombreJugador}'"
         cursor.execute(instrucccion)
@@ -421,7 +468,20 @@ def actualizarTablaDespuesTorneo(nombreTorneo, nombreJugador, elo, victorias, me
         return True
     finally:
         conexion.commit()
-        conexion.close()      
+        conexion.close()
+
+def editarTablaListaTorneo(nombreTorneo, nombre, fecha, descripcion):
+    try:
+        conexion = sql.connect("ajedrez.db")
+        cursor = conexion.cursor()
+        instrucccion = f"UPDATE listaTorneos SET Nombre = '{nombre}', Fecha = '{fecha}', Descripcion = '{descripcion}' Where Nombre = '{nombreTorneo}'"
+        cursor.execute(instrucccion)
+    except Exception as e:
+        print("Error al actualizar datos (editarTablaListaTorneo):", e)
+        return True
+    finally:
+        conexion.commit()
+        conexion.close()       
 
 def eliminarJugadorTorneo(nombreTorneo, nombreCompleto):
     try:

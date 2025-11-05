@@ -21,7 +21,7 @@ def interfazJugadores():
 
 def interfazDatos():
     ventanaMain.withdraw()
-    datos.interfazDatos3uuyu(ventanaMain)   
+    datos.interfazDatos1(ventanaMain)   
 
 botonTorneo = tk.Button(ventanaMain, text= "Nuevo Torneo", bg="gray", fg="black", command= interfazTorneo, font=30)
 botonTorneo.pack(padx=50, pady= 10, fill=tk.BOTH, expand=True)

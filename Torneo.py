@@ -243,7 +243,7 @@ def interfazTorneo2(ventanaMain, nombreTorneo, datosTorneo):
             desempatesJugadores.append(desempate)
             #Nombre, Genero, Facultad, Elo, Victorias, Tablas, Derrotas, Puntos, Desempates, diferenciaElo
 
-        respuesta = messagebox.askyesno("Cargar", "¿Estás seguro de cargar el torneo? \n ¡!Una vez cargado no se podrá editar el torneo!!")
+        respuesta = messagebox.askyesno("Cargar", "¿Estás seguro de cargar el torneo? \n ¡!!Una vez cargado no se podrá editar el torneo!!")
         if respuesta:
             if len(jugadoresInscritos) != int(datosTorneo[2]):
                 messagebox.showerror("Error", f"!!Debe haber {datosTorneo[2]} jugador/es \n inscritos para cargar el torneo!!")
@@ -590,11 +590,11 @@ def interfazTorneo5(ventanaMain, nombreTorneo, datosTorneo):
         if vl.validarNombre(entryNombre.get()):
             nombre = entryNombre.get()
         else:
-            labelError.config(text="!!El nombre solo debe tener \n caracteres alfanúmericos!!", bg="lightgray", font=12)
+            labelError.config(text="!!El nombre solo debe tener caracteres \n alfanúmericos [Máximo 15]!!", bg="lightgray", font=12)
             labelError.after(3000, lambda:labelError.config(text="", bg="gray"))
             return
         
-        fecha = entryFecha.get_date()
+        fecha = str(entryFecha.get_date()).replace("-", "/")
 
         if vl.validarEntero(spinboxParticipantes.get()):
             participantes = spinboxParticipantes.get()
@@ -745,10 +745,10 @@ def interfazTorneo6(ventanaMain, nombreTorneo, datosTorneo, estadisticasJugadore
                     tag = "Invitado"
                 else:
                     tag = "UJAP"
-                tabla.tag_configure("Oro", background="#DEDE2C", foreground="#FFFFFF")
-                tabla.tag_configure("Plata", background="#545050", foreground="#FFFFFF")
-                tabla.tag_configure("Bronce", background="#8D4416", foreground="#FFFFFF")
-                tabla.tag_configure("Femenina", background="#DE2C50", foreground="#FFFFFF")
+                tabla.tag_configure("Oro", background="#DEDE2C", foreground="#FFFFFF", font=("", 11, "bold"))
+                tabla.tag_configure("Plata", background="#545050", foreground="#FFFFFF", font=("", 11, "bold"))
+                tabla.tag_configure("Bronce", background="#8D4416", foreground="#FFFFFF", font=("", 11, "bold"))
+                tabla.tag_configure("Femenina", background="#DE2C50", foreground="#FFFFFF", font=("", 11, "bold"))
                 tabla.tag_configure("Ingeniería", background="#00008B", foreground="#FFFFFF")
                 tabla.tag_configure("Sociales", background="#A52A2A", foreground="#FFFFFF")
                 tabla.tag_configure("Arquitectura", background="#402169", foreground="#FFFFFF")
@@ -800,17 +800,16 @@ def interfazTorneo6(ventanaMain, nombreTorneo, datosTorneo, estadisticasJugadore
             scrollbar = ttk.Scrollbar(frame, orient=tk.VERTICAL, command=tabla.yview)
             tabla.configure(yscroll=scrollbar.set)
             scrollbar.grid(row=0, column=10, sticky="ns")
+        
+        bd.agregarDatosListaTorneos(datosTorneo[0], datosTorneo[1], datosTorneo[2], datosTorneo[3], datosTorneo[4], (f"{"Ninguna" if datosTorneo[5] == "" else datosTorneo[5]}"))
 
     def desseleccionarFila():
         for fila in tabla.selection():
             tabla.selection_remove(fila)
     
     def verDatos():
-        messagebox.showinfo("Información Torneo:", f" Nombre: {datosTorneo[0]} \n Fecha: {datosTorneo[1]} \n Participantes: {datosTorneo[2]} \n Rondas: {datosTorneo[3]} \n Invitados: {"Si" if datosTorneo[4] == "True" else "No"} \n Descripción: {"Ninguna" if datosTorneo[5] == "" else datosTorneo[5]}")
+        messagebox.showinfo("Información Torneo", f" Nombre: {datosTorneo[0]} \n Fecha: {datosTorneo[1]} \n Participantes: {datosTorneo[2]} \n Rondas: {datosTorneo[3]} \n Invitados: {"Si" if datosTorneo[4] == "True" else "No"} \n Descripción: {"Ninguna" if datosTorneo[5] == "" else datosTorneo[5]}")
 
-    def guardarTorneo():
-        bd.agregarDatosListaTorneos(datosTorneo[0], datosTorneo[1], datosTorneo[2], datosTorneo[3], datosTorneo[4], (f"{"Ninguna" if datosTorneo[5] == "" else datosTorneo[5]}"))
-    #Ventana
     ventanaTorneo6 = tk.Toplevel(ventanaMain)
     ventanaTorneo6.title("Torneo")
     anchoVentana = 850
@@ -860,7 +859,7 @@ def interfazTorneo6(ventanaMain, nombreTorneo, datosTorneo, estadisticasJugadore
     tabla.heading("Victorias(+)", text="Victorias(+)")
     tabla.heading("Medallas(+)", text="Medallas(+)")
 
-    botonTerminarTorneo = tk.Button(ventanaTorneo6, text="Terminar", font=15, command=lambda:(ventanaTorneo6.destroy(), ventanaMain.deiconify(), guardarTorneo()))
+    botonTerminarTorneo = tk.Button(ventanaTorneo6, text="Terminar", font=15, command=lambda:(ventanaTorneo6.destroy(), ventanaMain.deiconify()))
     botonTerminarTorneo.pack(padx=10, pady=10, side=tk.RIGHT)
 
     botonVerDatos = tk.Button(ventanaTorneo6, text="Datos", font=15, command=verDatos)

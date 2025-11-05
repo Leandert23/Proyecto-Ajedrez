@@ -59,13 +59,13 @@ def interfazJugadores1(ventanaMain):
             tabla.selection_set(fila)
             menu.tk_popup(evento.x_root, evento.y_root)
     
-    def editarFila():
+    def editarJugador():
         fila = tabla.selection()
         datos = tabla.item(fila, 'values')
         ventanaJugadores1.withdraw()
         interfazJugadores4(ventanaMain, datos[0], datos[1], datos[2], datos[3], datos[4], datos[5], datos[6])
 
-    def borrarFila():
+    def borrarJugador():
         item = tabla.selection()
         valores = tabla.item(item, 'values')
         respuesta = messagebox.askyesno("Borrar", f"¿Estás seguro de borrar a {valores[0]}?")
@@ -126,8 +126,8 @@ def interfazJugadores1(ventanaMain):
     tabla.heading("Medallas", text="Medallas", command=lambda:cargarJugadores("Medallas"))
 
     menu = tk.Menu(ventanaJugadores1, tearoff=0)
-    menu.add_command(label="Editar", command=editarFila)
-    menu.add_command(label="Borrar", command=borrarFila)    
+    menu.add_command(label="Editar", command=editarJugador)
+    menu.add_command(label="Borrar", command=borrarJugador)    
     
     labelJugadores = tk.Label(ventanaJugadores1, text="Jugadores: 0", bg="lightgray", fg="black", font=15)
     labelJugadores.pack(padx=10, pady=10, side=tk.LEFT)
