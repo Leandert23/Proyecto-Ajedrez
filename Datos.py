@@ -97,6 +97,8 @@ def interfazDatos1(ventanaMain):
     ventanaDatos1.resizable(False, False)
     ventanaDatos1.configure(bg="lightgray")
     ventanaDatos1.bind("<Escape>", lambda e:(ventanaMain.deiconify(), ventanaDatos1.destroy()))
+    ventanaDatos1.bind("<Right>", lambda e:(ventanaDatos1.destroy(), interfazDatos2(ventanaMain)))
+    ventanaDatos1.bind("<Left>", lambda e:(ventanaDatos1.destroy(), interfazDatos3(ventanaMain)))
     ventanaDatos1.bind("<Double-Button-1>", lambda e:desseleccionarFila())
     ventanaDatos1.protocol("WM_DELETE_WINDOW", lambda: (ventanaDatos1.destroy(), sys.exit(0)))
 
@@ -105,9 +107,9 @@ def interfazDatos1(ventanaMain):
     labelTitulo.pack(pady= 10)
 
     frame = tk.Frame(ventanaDatos1, bd=10, bg="gray", width=500, height=500)
-    frame.pack_propagate(False)
     frame.pack()
-    frame.grid_columnconfigure(1, weight=1)
+    frame.grid_columnconfigure(0, minsize=100, weight=1)
+    frame.grid_rowconfigure(0, minsize=100, weight=1)
 
     estilo = ttk.Style()
     estilo.configure("Treeview.Heading", font= 20)
@@ -171,22 +173,21 @@ def interfazDatos2(ventanaMain):
             tabla.selection_set(fila)
             menu.tk_popup(evento.x_root, evento.y_root)
 
-    def editarFila():
+    def editarTorneo():
         fila = tabla.selection()
         datos = tabla.item(fila, 'values')
         datosTorneo = (datos[0], datos[1], datos[2], datos[3], datos[4], datos[5])
         nombreTorneo = f"{datos[0]}_{datos[1]}_P{datos[2]}_R{datos[3]}_{datos[4]}{"_" if datos[5] != "Ninguna" else ""}{datos[5] if datos[5] != "Ninguna" else ""}"
-        ventanaDatos2.withdraw()
-        interfazDatos6(ventanaMain, nombreTorneo, datosTorneo)
-
+        interfazDatos6(ventanaDatos2, nombreTorneo, datosTorneo)
 
     def borrarTorneo():
-        item = tabla.selection()
-        valores = tabla.item(item, 'values')
-        respuesta = messagebox.askyesno("Borrar", f"¿Estás seguro de borrar \n el torneo {valores[0]}?")
+        fila = tabla.selection()
+        datos = tabla.item(fila, 'values')
+        respuesta = messagebox.askyesno("Borrar", f"¿Estás seguro de borrar \n el torneo {datos[0]}?")
         if respuesta:
-            tabla.delete(item)
-            bd.eliminarTorneo(valores[0]) 
+            tabla.delete(fila)
+            nombreTorneo = f"{datos[0]}_{datos[1]}_P{datos[2]}_R{datos[3]}_{datos[4]}{"_" if datos[5] != "Ninguna" else ""}{datos[5] if datos[5] != "Ninguna" else ""}"
+            bd.eliminarTorneo(datos[0], nombreTorneo) 
             cargarTorneos()
     
     def verTorneo():
@@ -194,8 +195,7 @@ def interfazDatos2(ventanaMain):
         datos = tabla.item(fila, 'values')
         datosTorneo = (datos[0], datos[1], datos[2], datos[3], datos[4], datos[5])
         nombreTorneo = f"{datos[0]}_{datos[1]}_P{datos[2]}_R{datos[3]}_{datos[4]}{"_" if datos[5] != "Ninguna" else ""}{datos[5] if datos[5] != "Ninguna" else ""}"
-        ventanaDatos2.withdraw()
-        interfazDatos5(ventanaMain, nombreTorneo, datosTorneo)
+        interfazDatos5(ventanaDatos2, nombreTorneo, datosTorneo)
 
     def desseleccionarFila():
         for fila in tabla.selection():
@@ -213,6 +213,8 @@ def interfazDatos2(ventanaMain):
     ventanaDatos2.grab_set()
     ventanaDatos2.resizable(False, False)
     ventanaDatos2.configure(bg="lightgray")
+    ventanaDatos2.bind("<Right>", lambda e:(ventanaDatos2.destroy(), interfazDatos3(ventanaMain)))
+    ventanaDatos2.bind("<Left>", lambda e:(ventanaDatos2.destroy(), interfazDatos1(ventanaMain)))
     ventanaDatos2.bind("<Escape>", lambda e:(ventanaMain.deiconify(), ventanaDatos2.destroy()))
     ventanaDatos2.bind("<Double-Button-1>", lambda e: desseleccionarFila())
     ventanaDatos2.protocol("WM_DELETE_WINDOW", lambda: (ventanaDatos2.destroy(), sys.exit(0)))
@@ -249,7 +251,7 @@ def interfazDatos2(ventanaMain):
 
     menu = tk.Menu(ventanaDatos2, tearoff=0)
     menu.add_command(label="Ver", command=verTorneo)
-    menu.add_command(label="Editar", command=editarFila)
+    menu.add_command(label="Editar", command=editarTorneo)
     menu.add_command(label="Borrar", command=borrarTorneo)
 
     labelTorneos = tk.Label(ventanaDatos2, text="Torneos: 0", bg="lightgray", fg="black", font=15)
@@ -279,6 +281,10 @@ def interfazDatos3(ventanaMain):
         tag = ""
         posiciones = 1
         for registro in datos:
+            if registro[3] == 0:
+                bd.eliminarJugadorMedallas(registro[0])
+                continue
+
             if registro[1] == "Ingeniería":
                 tag = "Ingeniería"
             elif registro[1] == "Sociales":
@@ -336,8 +342,7 @@ def interfazDatos3(ventanaMain):
     def editarFila():
         fila = tabla.selection()
         datos = tabla.item(fila, 'values')
-        ventanaDatos3.withdraw()
-        interfazDatos4(ventanaMain, datos[1], datos[3], datos[4], datos[5], datos[6], datos[7], datos[8])
+        interfazDatos4(ventanaDatos3, datos[1], datos[3], datos[4], datos[5], datos[6], datos[7], datos[8])
 
     def desseleccionarFila():
         for fila in tabla.selection():
@@ -350,12 +355,14 @@ def interfazDatos3(ventanaMain):
     altoVentana = 350
     x = (ventanaDatos3.winfo_screenwidth() - anchoVentana)//2
     y = (ventanaDatos3.winfo_screenheight() - altoVentana)//2
-    ventanaDatos3.geometry(f"{anchoVentana}x{altoVentana}+{x}+{y}")
+    ventanaDatos3.geometry(f"{ventanaDatos3.winfo_screenwidth()}x{ventanaDatos3.winfo_screenheight()-50}")
     ventanaDatos3.focus_force()
     ventanaDatos3.grab_set()
     ventanaDatos3.resizable(False, False)
     ventanaDatos3.configure(bg="lightgray")
     ventanaDatos3.bind("<Escape>", lambda e:(ventanaMain.deiconify(), ventanaDatos3.destroy()))
+    ventanaDatos3.bind("<Right>", lambda e:(ventanaDatos3.destroy(), interfazDatos1(ventanaMain)))
+    ventanaDatos3.bind("<Left>", lambda e:(ventanaDatos3.destroy(), interfazDatos2(ventanaMain)))
     ventanaDatos3.bind("<Double-Button-1>", lambda e: desseleccionarFila())
     ventanaDatos3.protocol("WM_DELETE_WINDOW", lambda: (ventanaDatos3.destroy(), sys.exit(0)))
 
@@ -370,7 +377,7 @@ def interfazDatos3(ventanaMain):
 
     estilo = ttk.Style()
     estilo.configure("Treeview.Heading", font= 20)
-    estilo.configure("Treeview", font= 20, rowheight=20)
+    estilo.configure("Treeview", font= 20)
     tabla = ttk.Treeview(frame, columns=("#", "Nombre y Apellido", "Facultad", "Torneos", "Medallas", "Oro", "Plata", "Bronce", "Otra", "Estado"),  show="headings")
     tabla.grid(row=0, column=0, columnspan=6, padx=5, pady=10, sticky="ew")
     tabla.bind("<Button-3>", menu)
@@ -405,7 +412,7 @@ def interfazDatos3(ventanaMain):
 
     cargarTabla()
 
-def interfazDatos4(ventanaMain, nombreJugador, torneos, medall, o, pla, bro, otr):
+def interfazDatos4(ventana, nombreJugador, torneos, medall, o, pla, bro, otr):
     #Funciones
     def insertarDatos():
         spinboxMedallas.delete(0, tk.END)
@@ -468,7 +475,7 @@ def interfazDatos4(ventanaMain, nombreJugador, torneos, medall, o, pla, bro, otr
 
         bd.actualizarMedallasJugador(nombreJugador, medallas, oro, plata, bronce, otra)
         ventanaDatos4.destroy()
-        interfazDatos3(ventanaMain)
+        interfazDatos3(ventana)
 
     def limpiar():
         spinboxMedallas.delete(0, tk.END)
@@ -479,7 +486,7 @@ def interfazDatos4(ventanaMain, nombreJugador, torneos, medall, o, pla, bro, otr
         spinboxMedallas.focus()
 
     #Ventana
-    ventanaDatos4 = tk.Toplevel(ventanaMain)
+    ventanaDatos4 = tk.Toplevel(ventana)
     ventanaDatos4.title("Datos")
     anchoVentana = 375
     altoVentana = 425
@@ -490,9 +497,10 @@ def interfazDatos4(ventanaMain, nombreJugador, torneos, medall, o, pla, bro, otr
     ventanaDatos4.focus_force()
     ventanaDatos4.resizable(False, False)
     ventanaDatos4.configure(bg="lightgray")
-    ventanaDatos4.bind("<Escape>", lambda e:(ventanaDatos4.destroy(), interfazDatos3(ventanaMain)))
+    ventanaDatos4.bind("<Escape>", lambda e:(ventana.attributes('-disabled', False), ventanaDatos4.destroy()))
     ventanaDatos4.bind("<Return>", lambda e: editarMedallas())
     ventanaDatos4.protocol("WM_DELETE_WINDOW", lambda: (ventanaDatos4.destroy(), sys.exit(0)))
+    ventana.attributes('-disabled', True)
 
     #Widgets
     labelTitulo = tk.Label(ventanaDatos4, text="Editar Medallas", font= 20)
@@ -545,7 +553,7 @@ def interfazDatos4(ventanaMain, nombreJugador, torneos, medall, o, pla, bro, otr
 
     insertarDatos()
 
-def interfazDatos5(ventanaMain, nombreTorneo, datosTorneo):
+def interfazDatos5(ventana, nombreTorneo, datosTorneo):
     #Funciones
     def cargarTabla():
         for fila in tabla.get_children():
@@ -558,7 +566,7 @@ def interfazDatos5(ventanaMain, nombreTorneo, datosTorneo):
 
         if datos == None:
             ventanaDatos5.destroy()
-            interfazDatos2(ventanaMain)
+            ventana.attributes('-disabled', False), 
             messagebox.showerror("Error", "!!Torneo no encontrado!!")
             return
         
@@ -669,8 +677,8 @@ def interfazDatos5(ventanaMain, nombreTorneo, datosTorneo):
 
 
     #Ventana
-    ventanaDatos5 = tk.Toplevel(ventanaMain)
-    ventanaDatos5.title("Torneo")
+    ventanaDatos5 = tk.Toplevel(ventana)
+    ventanaDatos5.title("Datos")
     anchoVentana = 850
     altoVentana = 450
     x = (ventanaDatos5.winfo_screenwidth() - anchoVentana)//2
@@ -680,9 +688,11 @@ def interfazDatos5(ventanaMain, nombreTorneo, datosTorneo):
     ventanaDatos5.grab_set()
     ventanaDatos5.resizable(False, False)
     ventanaDatos5.configure(bg="lightgray")
-    ventanaDatos5.bind("<Escape>", lambda e:(ventanaDatos5.destroy(), interfazDatos2(ventanaMain)))
+    ventanaDatos5.bind("<Escape>", lambda e:(ventana.attributes('-disabled', False), ventanaDatos5.destroy()))
     ventanaDatos5.bind("<Double-Button-1>", lambda e: desseleccionarFila())
     ventanaDatos5.protocol("WM_DELETE_WINDOW", lambda: (ventanaDatos5.destroy(), sys.exit(0)))
+    ventana.attributes('-disabled', True)
+    
 
     #Widgets
     labelTitulo = tk.Label(ventanaDatos5, text=f"{datosTorneo[0]}", font= 20)
@@ -695,7 +705,7 @@ def interfazDatos5(ventanaMain, nombreTorneo, datosTorneo):
 
     estilo = ttk.Style()
     estilo.configure("Treeview.Heading", font= 20)
-    estilo.configure("Treeview", font= 15, rowheight=30)
+    estilo.configure("Treeview", font= 15, rowheight=20)
     tabla = ttk.Treeview(frame, columns=("Col1", "Col2", "Col3", "Col4", "Col5", "Col6", "Col7", "Col8", "Col9"),  show="headings")
     tabla.grid(row=0, column=0, columnspan=9, padx=5, pady=10, sticky="ew") 
 
@@ -707,7 +717,7 @@ def interfazDatos5(ventanaMain, nombreTorneo, datosTorneo):
 
     cargarTabla()
 
-def interfazDatos6(ventanaMain, nombreTorneo, datosTorneo):
+def interfazDatos6(ventana, nombreTorneo, datosTorneo):
     #Funciones
     #(nombre, fecha, participantes, rondas, invitados, descripcion)
     def insertarDatos():
@@ -742,7 +752,7 @@ def interfazDatos6(ventanaMain, nombreTorneo, datosTorneo):
             return
         
         labelError.config(text=f"!Torneo editado con exito!!", bg="lightgray", font=12)
-        labelError.after(2000, lambda:(ventanaDatos6.destroy(), interfazDatos2(ventanaMain)))
+        labelError.after(2000, lambda:(ventanaDatos6.destroy(), interfazDatos2(ventana)))
 
     def limpiar():
         entryNombre.delete(0, tk.END)
@@ -753,8 +763,8 @@ def interfazDatos6(ventanaMain, nombreTorneo, datosTorneo):
         entryNombre.focus()
 
     #Ventana
-    ventanaDatos6 = tk.Toplevel(ventanaMain)
-    ventanaDatos6.title("Torneo")
+    ventanaDatos6 = tk.Toplevel(ventana)
+    ventanaDatos6.title("Datos")
     anchoVentana = 400
     altoVentana = 325
     x = (ventanaDatos6.winfo_screenwidth() - anchoVentana)//2
@@ -764,9 +774,10 @@ def interfazDatos6(ventanaMain, nombreTorneo, datosTorneo):
     ventanaDatos6.focus_force()
     ventanaDatos6.resizable(False, False)
     ventanaDatos6.configure(bg="lightgray")
-    ventanaDatos6.bind("<Escape>", lambda e:(ventanaDatos6.destroy(), interfazDatos2(ventanaMain)))
+    ventanaDatos6.bind("<Escape>", lambda e:(ventana.attributes('-disabled', False), ventanaDatos6.destroy()))
     ventanaDatos6.bind("<Return>", lambda e: editarTorneo())
-    ventanaDatos6.protocol("WM_DELETE_WINDOW", lambda: (ventanaDatos6.destroy(), sys.exit(0)))
+    ventanaDatos6.protocol("WM_DELETE_WINDOW", lambda:(ventanaDatos6.destroy(), sys.exit(0)))
+    ventana.attributes('-disabled', True)
 
     #Widgets
     labelTitulo = tk.Label(ventanaDatos6, text="Editar Torneo", font= 20)

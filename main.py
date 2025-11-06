@@ -37,3 +37,4 @@ baseDatos.crearTablaMedallas()
 ventanaMain.mainloop()
 
 
+

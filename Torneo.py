@@ -85,9 +85,7 @@ def interfazTorneo1(ventanaMain):
     labelTitulo.pack(pady= 10)
 
     frame = tk.Frame(ventanaTorneo1, bd=10, bg="gray", width=500, height=500)
-    frame.pack_propagate(False)
     frame.pack()
-    frame.grid_columnconfigure(1, weight=1)
 
     labelNombre = tk.Label(frame, text="Nombre", font= 20)
     labelNombre.grid(row=0, column=0, padx=10, pady=10, sticky="ew")
@@ -206,8 +204,7 @@ def interfazTorneo2(ventanaMain, nombreTorneo, datosTorneo):
     def editarFila():
         fila = tabla.selection()
         datos = tabla.item(fila, 'values')
-        ventanaTorneo2.withdraw()
-        interfazTorneo4(ventanaMain, nombreTorneo, datos[0], datos[4], datos[5], datos[6], datos[8], datosTorneo)
+        interfazTorneo4(ventanaTorneo2, nombreTorneo, datos[0], datos[4], datos[5], datos[6], datos[8], datosTorneo)
 
     def borrarFila():
         item = tabla.selection()
@@ -268,7 +265,11 @@ def interfazTorneo2(ventanaMain, nombreTorneo, datosTorneo):
             interfazTorneo6(ventanaMain, respuesta, datosTorneo, estadisticasJugadores)
 
     def eliminarTabla():
-        bd.eliminarTabla(nombreTorneo)
+        respuesta = messagebox.askyesno("Salir", f" Si sale en este momento el torneo \n {datosTorneo[0]} será eliminado, ¿Salir?")
+        if respuesta:
+            ventanaTorneo2.destroy()
+            sys.exit(0)
+            bd.eliminarTabla(nombreTorneo)
     #Ventana
     ventanaTorneo2 = tk.Toplevel(ventanaMain)
     ventanaTorneo2.title("Torneo")
@@ -283,7 +284,7 @@ def interfazTorneo2(ventanaMain, nombreTorneo, datosTorneo):
     ventanaTorneo2.configure(bg="lightgray")
     ventanaTorneo2.bind("<Double-Button-1>", lambda e: desseleccionarFila())
     ventanaTorneo2.bind("<Return>", lambda e: cargarTorneo())
-    ventanaTorneo2.protocol("WM_DELETE_WINDOW", lambda: (ventanaTorneo2.destroy(), eliminarTabla(), sys.exit(0)))
+    ventanaTorneo2.protocol("WM_DELETE_WINDOW", eliminarTabla)
 
     #Widgets
     labelTitulo = tk.Label(ventanaTorneo2, text=f"{datosTorneo[0]}", font= 20)
@@ -326,13 +327,13 @@ def interfazTorneo2(ventanaMain, nombreTorneo, datosTorneo):
     menu.add_command(label="Editar", command=editarFila)
     menu.add_command(label="Borrar", command=borrarFila)
 
-    botonAgregarJugador = tk.Button(ventanaTorneo2, text="Agregar Jugador", font=15, command=lambda:(ventanaTorneo2.withdraw(), interfazTorneo3(ventanaMain, nombreTorneo, datosTorneo)))
+    botonAgregarJugador = tk.Button(ventanaTorneo2, text="Agregar Jugador", font=15, command=lambda:(interfazTorneo3(ventanaTorneo2, nombreTorneo, datosTorneo)))
     botonAgregarJugador.pack(padx=10, pady=10, side=tk.RIGHT)
 
     botonContinuarTorneo = tk.Button(ventanaTorneo2, text="Continuar", font=15, command= cargarTorneo)
     botonContinuarTorneo.pack(padx=10, pady=10, side=tk.RIGHT)
 
-    botonEditarTorneo = tk.Button(ventanaTorneo2, text="Editar", font=15, command= lambda:(ventanaTorneo2.withdraw(), interfazTorneo5(ventanaMain, nombreTorneo, datosTorneo)))
+    botonEditarTorneo = tk.Button(ventanaTorneo2, text="Editar", font=15, command= lambda:(interfazTorneo5(ventanaTorneo2, nombreTorneo, datosTorneo)))
     botonEditarTorneo.pack(padx=10, pady=10, side=tk.RIGHT)
 
 
@@ -347,10 +348,10 @@ def interfazTorneo2(ventanaMain, nombreTorneo, datosTorneo):
 
     actualizarTabla()
 
-def interfazTorneo3(ventanaMain, nombreTorneo, datosTorneo):
+def interfazTorneo3(ventana, nombreTorneo, datosTorneo):
     #Funciones
     def filtrarJugadores():
-        datos = bd.consultarDatosJugadores()
+        datos = bd.consultarDatosJugadores("Nombre")
         listaJugadoresFiltrados = []
         nombreCompletos = []
         for registro in datos:
@@ -376,11 +377,11 @@ def interfazTorneo3(ventanaMain, nombreTorneo, datosTorneo):
             labelError.after(3000, lambda:labelError.config(text="", bg="gray"))
             return
         ventanaTorneo3.destroy()
-        interfazTorneo2(ventanaMain, nombreTorneo, datosTorneo)  
+        interfazTorneo2(ventana, nombreTorneo, datosTorneo)  
 
     #Ventana
-    ventanaTorneo3 = tk.Toplevel(ventanaMain)
-    ventanaTorneo3.title("Jugadores")
+    ventanaTorneo3 = tk.Toplevel(ventana)
+    ventanaTorneo3.title("Torneo")
     anchoVentana = 300
     altoVentana = 400
     x = (ventanaTorneo3.winfo_screenwidth() - anchoVentana)//2
@@ -390,8 +391,9 @@ def interfazTorneo3(ventanaMain, nombreTorneo, datosTorneo):
     ventanaTorneo3.grab_set()
     ventanaTorneo3.resizable(False, False)
     ventanaTorneo3.configure(bg="lightgray")
-    ventanaTorneo3.bind("<Escape>", lambda e:(ventanaTorneo3.destroy(), interfazTorneo2(ventanaMain, nombreTorneo, datosTorneo)))
+    ventanaTorneo3.bind("<Escape>", lambda e:(ventana.attributes('-disabled', False), ventanaTorneo3.destroy()))
     ventanaTorneo3.protocol("WM_DELETE_WINDOW", lambda: (ventanaTorneo3.destroy(), sys.exit(0)))
+    ventana.attributes('-disabled', True)
 
     #Widgets
     labelAgregarJugador = tk.Label(ventanaTorneo3, text="Agregar Jugador", font=15)
@@ -416,7 +418,7 @@ def interfazTorneo3(ventanaMain, nombreTorneo, datosTorneo):
 
     filtrarJugadores()
 
-def interfazTorneo4(ventanaMain, nombreTorneo, nombreJugador, vict, tabl, derro, desemp, datosTorneo):
+def interfazTorneo4(ventana, nombreTorneo, nombreJugador, vict, tabl, derro, desemp, datosTorneo):
     #Funciones
     def insertarDatos():
         desempates = desemp.split("  ")
@@ -495,7 +497,7 @@ def interfazTorneo4(ventanaMain, nombreTorneo, nombreJugador, vict, tabl, derro,
         puntos = int(numeroVictorias) + int(numeroTablas)/2
         bd.actualizarJugadorTorneo(nombreTorneo, nombreJugador, victorias, tablas, derrotas, puntos, round(float(desempate1),2), round(float(desempate2),2), diferenciaElo)
         ventanaTorneo4.destroy()
-        interfazTorneo2(ventanaMain, nombreTorneo, datosTorneo)
+        interfazTorneo2(ventana, nombreTorneo, datosTorneo)
 
     def limpiar():
         entryVictorias.delete(0, tk.END)
@@ -506,8 +508,8 @@ def interfazTorneo4(ventanaMain, nombreTorneo, nombreJugador, vict, tabl, derro,
         entryVictorias.focus()
 
     #Ventana
-    ventanaTorneo4 = tk.Toplevel(ventanaMain)
-    ventanaTorneo4.title("Jugadores")
+    ventanaTorneo4 = tk.Toplevel(ventana)
+    ventanaTorneo4.title("Torneo")
     anchoVentana = 400
     altoVentana = 425
     x = (ventanaTorneo4.winfo_screenwidth() - anchoVentana)//2
@@ -517,9 +519,10 @@ def interfazTorneo4(ventanaMain, nombreTorneo, nombreJugador, vict, tabl, derro,
     ventanaTorneo4.focus_force()
     ventanaTorneo4.grab_set()
     ventanaTorneo4.configure(bg="lightgray")
-    ventanaTorneo4.bind("<Escape>", lambda e:(ventanaTorneo4.destroy(), interfazTorneo2(ventanaMain, nombreTorneo, datosTorneo)))
+    ventanaTorneo4.bind("<Escape>", lambda e:(ventana.attributes('-disabled', False), ventanaTorneo4.destroy()))
     ventanaTorneo4.bind("<Return>", lambda e: editarJugador())
     ventanaTorneo4.protocol("WM_DELETE_WINDOW", lambda: (ventanaTorneo4.destroy(), sys.exit(0)))
+    ventana.attributes('-disabled', True)
 
     #Widgets
     labelTitulo = tk.Label(ventanaTorneo4, text="EditarJugador", font= 20)
@@ -572,7 +575,7 @@ def interfazTorneo4(ventanaMain, nombreTorneo, nombreJugador, vict, tabl, derro,
 
     insertarDatos()
 
-def interfazTorneo5(ventanaMain, nombreTorneo, datosTorneo):
+def interfazTorneo5(ventana, nombreTorneo, datosTorneo):
     #Funciones
     #(nombre, fecha, participantes, rondas, invitados, descripcion)
     def insertarDatos():
@@ -630,7 +633,7 @@ def interfazTorneo5(ventanaMain, nombreTorneo, datosTorneo):
         
         labelError.config(text=f"!!Torneo editado con exito!!", bg="lightgray", font=12)
         datosTorneo = (nombre, fecha, participantes, rondas, invitados, descripcion)
-        labelError.after(2000, lambda:(ventanaTorneo5.destroy(), interfazTorneo2(ventanaMain, respuesta, datosTorneo)))
+        labelError.after(2000, lambda:(ventanaTorneo5.destroy(), interfazTorneo2(ventana, respuesta, datosTorneo)))
 
     def limpiar():
         entryNombre.delete(0, tk.END)
@@ -644,7 +647,7 @@ def interfazTorneo5(ventanaMain, nombreTorneo, datosTorneo):
         entryNombre.focus()
 
     #Ventana
-    ventanaTorneo5 = tk.Toplevel(ventanaMain)
+    ventanaTorneo5 = tk.Toplevel(ventana)
     ventanaTorneo5.title("Torneo")
     anchoVentana = 400
     altoVentana = 475
@@ -655,9 +658,10 @@ def interfazTorneo5(ventanaMain, nombreTorneo, datosTorneo):
     ventanaTorneo5.focus_force()
     ventanaTorneo5.resizable(False, False)
     ventanaTorneo5.configure(bg="lightgray")
-    ventanaTorneo5.bind("<Escape>", lambda e:(ventanaTorneo5.destroy(), interfazTorneo2(ventanaMain, nombreTorneo, datosTorneo)))
+    ventanaTorneo5.bind("<Escape>", lambda e:(ventana.attributes('-disabled', False), ventanaTorneo5.destroy()))
     ventanaTorneo5.bind("<Return>", lambda e: editarTorneo())
     ventanaTorneo5.protocol("WM_DELETE_WINDOW", lambda: (ventanaTorneo5.destroy(), sys.exit(0)))
+    ventana.attributes('-disabled', True)
 
     #Widgets
     labelTitulo = tk.Label(ventanaTorneo5, text="Editar torneo", font= 20)
@@ -776,21 +780,21 @@ def interfazTorneo6(ventanaMain, nombreTorneo, datosTorneo, estadisticasJugadore
                     else:
                         tag = "Bronce"
                     tabla.insert("", tk.END, values=(posiciones+1, registro[0], registro[1], registro[2], registro[7], (f"{registro[8]}  {registro[9]}"), (f"{registro[3]}({"+" if int((estadisticasJugadores[indice][2]))+participantes > 0 else ""}{int(estadisticasJugadores[indice][2])+participantes})"), (f"{registro[4]}{f'(+{estadisticasJugadores[indice][1]})' if int(estadisticasJugadores[indice][1]) > 0 else "" }"), (f"{registro[5]}(+1)")), tags=(tag))
-                    bd.actualizarDatosJugador(registro[0], (int(registro[3])+(int(estadisticasJugadores[indice][2])+participantes)), (int(registro[4])+int(estadisticasJugadores[indice][1])), (int(registro[6])+1), (int(registro[5])+1), tag)
+                    bd.actualizarDatosJugador(registro[0], registro[2], (int(registro[3])+(int(estadisticasJugadores[indice][2])+participantes)), (int(registro[4])+int(estadisticasJugadores[indice][1])), (int(registro[6])+1), (int(registro[5])+1), tag)
                     bd.actualizarTablaDespuesTorneo(nombreTorneo, registro[0], (f"{registro[3]}({"+" if int((estadisticasJugadores[indice][2]))+participantes > 0 else ""}{int(estadisticasJugadores[indice][2])+participantes})"), (f"{registro[4]}{f'(+{estadisticasJugadores[indice][1]})' if int(estadisticasJugadores[indice][1]) > 0 else "" }"), (f"{registro[5]}(+1)"))
                     posiciones += 1
                     participantes -= 1
                 elif femenino == True and registro[1] == "F":
                     tag = "Femenina"
                     tabla.insert("", tk.END, values=(posiciones+1, registro[0], registro[1], registro[2], registro[7], (f"{registro[8]}  {registro[9]}"),(f"{registro[3]}({"+" if int((estadisticasJugadores[indice][2]))+participantes > 0 else ""}{int(estadisticasJugadores[indice][2])+participantes})"), (f"{registro[4]}{f'(+{estadisticasJugadores[indice][1]})' if int(estadisticasJugadores[indice][1]) > 0 else "" }"), (f"{registro[5]}(+1)")), tags=(tag))
-                    bd.actualizarDatosJugador(registro[0], (int(registro[3])+(int(estadisticasJugadores[indice][2])+participantes)), (int(registro[4])+int(estadisticasJugadores[indice][1])), (int(registro[6])+1), (int(registro[5])+1), "Otra")
+                    bd.actualizarDatosJugador(registro[0], registro[2], (int(registro[3])+(int(estadisticasJugadores[indice][2])+participantes)), (int(registro[4])+int(estadisticasJugadores[indice][1])), (int(registro[6])+1), (int(registro[5])+1), "Otra")
                     bd.actualizarTablaDespuesTorneo(nombreTorneo, registro[0], (f"{registro[3]}({"+" if int((estadisticasJugadores[indice][2]))+participantes > 0 else ""}{int(estadisticasJugadores[indice][2])+participantes})"), (f"{registro[4]}{f'(+{estadisticasJugadores[indice][1]})' if int(estadisticasJugadores[indice][1]) > 0 else "" }"), (f"{registro[5]}(+1)"))
                     posiciones += 1
                     participantes -= 1
                     femenino = False
                 else:
                     tabla.insert("", tk.END, values=(posiciones+1, registro[0], registro[1], registro[2], registro[7], (f"{registro[8]}  {registro[9]}"), (f"{registro[3]}({"+" if int((estadisticasJugadores[indice][2]))+participantes > 0 else ""}{int(estadisticasJugadores[indice][2])+participantes})"), (f"{registro[4]}{f'(+{estadisticasJugadores[indice][1]})' if int(estadisticasJugadores[indice][1]) > 0 else "" }"), registro[5]), tags=(tag))
-                    bd.actualizarDatosJugador(registro[0], (int(registro[3])+(int(estadisticasJugadores[indice][2])+participantes)), (int(registro[4])+int(estadisticasJugadores[indice][1])), (int(registro[6])+1), int(registro[5]))
+                    bd.actualizarDatosJugador(registro[0], registro[2], (int(registro[3])+(int(estadisticasJugadores[indice][2])+participantes)), (int(registro[4])+int(estadisticasJugadores[indice][1])), (int(registro[6])+1), int(registro[5]))
                     bd.actualizarTablaDespuesTorneo(nombreTorneo, registro[0], (f"{registro[3]}({"+" if int((estadisticasJugadores[indice][2]))+participantes > 0 else ""}{int(estadisticasJugadores[indice][2])+participantes})"), (f"{registro[4]}{f'(+{estadisticasJugadores[indice][1]})' if int(estadisticasJugadores[indice][1]) > 0 else "" }"), registro[5])
                     posiciones += 1
                     participantes -= 1
@@ -822,7 +826,7 @@ def interfazTorneo6(ventanaMain, nombreTorneo, datosTorneo, estadisticasJugadore
     ventanaTorneo6.resizable(False, False)
     ventanaTorneo6.configure(bg="lightgray")
     ventanaTorneo6.bind("<Double-Button-1>", lambda e: desseleccionarFila())
-    ventanaTorneo6.protocol("WM_DELETE_WINDOW", lambda: (ventanaTorneo6.destroy(), sys.exit(0),))
+    ventanaTorneo6.protocol("WM_DELETE_WINDOW", lambda: (ventanaTorneo6.destroy(), sys.exit(0)))
 
     #Widgets
     labelTitulo = tk.Label(ventanaTorneo6, text=f"{datosTorneo[0]}", font= 20)

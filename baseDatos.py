@@ -57,13 +57,15 @@ def consultarDatosJugador(nombreTorneo, nombreJugador, antesTorneo):
 
 def consultarDatosAntesTorneo(nombreTorneo):
     try:
-        #print("Consultando datos del torneo:", nombreTorneo)
         conexion = sql.connect("ajedrez.db")
         cursor = conexion.cursor()
-        instrucccion = f"SELECT * FROM '{nombreTorneo}' ORDER BY Elo DESC"
+        instrucccion = f"SELECT name FROM sqlite_master WHERE type='table' AND name = '{nombreTorneo}'"
         cursor.execute(instrucccion)
-        jugadoresInscritos = cursor.fetchall()
-        return jugadoresInscritos
+        if cursor.fetchone() != None:
+            instrucccion = f"SELECT * FROM '{nombreTorneo}' ORDER BY Elo DESC"
+            cursor.execute(instrucccion)
+            jugadoresInscritos = cursor.fetchall()
+            return jugadoresInscritos
     except Exception as e:
         print("Error al consultar datos (consultarDatosAntesTorneo):", e)
     finally:
@@ -160,7 +162,9 @@ def consultarDatosMedallas(filtro):
         print("Error al consultar datos (consultarDatosMedallas):", e)
     finally:
         conexion.commit()
-        conexion.close()        
+        conexion.close()       
+
+     
         
 def eliminarJugadorTorneo(nombre, apellido, medallas, torneos):
     try:
@@ -299,9 +303,9 @@ def agregarDatosJugadores(*datosJugador):
         cursor = conexion.cursor()
         instrucccion = f"INSERT INTO Jugadores VALUES(?, ?, ?, ?, ?, ?, ?)"
         cursor.execute(instrucccion, (datosJugador))
-        return datosJugador[1]
+        return datosJugador[0]
     except Exception as e:
-        print("Error al agregar datos (agregarDatosJugadore):", e)
+        print("Error al agregar datos (agregarDatosJugadores):", e)
         return True
     finally:
         conexion.commit()
@@ -327,7 +331,6 @@ def agregarDatosDespuesTorneo(nombreTorneo, datos, desempate):
         instrucccion = f"INSERT INTO'{nombreTorneo}' ([Nombre y Apellido], Genero, Facultad, [Elo (+/-)], [Victorias (+)], [Medallas (+)], Torneos, Puntos, [Desempate (1)], [Desempate (2)]) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
         datosJugador = list(datos) + list(desempate)
         cursor.execute(instrucccion, (datosJugador))
-        #print(datosJugador)
     except Exception as e:
         print("Error al agregar datos (agregarDatosDespuesTorneo):", e)
         return True
@@ -351,16 +354,8 @@ def agregarDatosMedallas(datosJugador):
     try:
         conexion = sql.connect("ajedrez.db")
         cursor = conexion.cursor()
-        instrucccion =f"""SELECT EXISTS(
-                                    SELECT 1 
-                                    FROM Medallas 
-                                    WHERE [Nombre y Apellido] = '{datosJugador[0]}'
-                                        )"""
-        cursor.execute(instrucccion)
-        resultado = cursor.fetchone()[0]
-        if bool(resultado) == False:
-            instrucccion = f"INSERT INTO Medallas ([Nombre y Apellido], Facultad, Torneos, Medallas) VALUES(?, ?, ?, ?)"
-            cursor.execute(instrucccion, datosJugador)
+        instrucccion =f"INSERT OR IGNORE INTO Medallas ([Nombre y Apellido], Facultad, Torneos, Medallas) VALUES(?, ?, ?, ?)"
+        cursor.execute(instrucccion, datosJugador)
     except Exception as e:
         print("Error al agregar datos (agregarDatosMedallas):", e)
     finally:
@@ -386,6 +381,8 @@ def editarDatosJugador(nombreJugador, nombreCompleto, genero, facultad, elo, vic
         conexion = sql.connect("ajedrez.db")
         cursor = conexion.cursor()
         instrucccion = f"UPDATE Jugadores SET [Nombre y Apellido] = '{nombreCompleto}', Genero = '{genero}', Facultad = '{facultad}', Elo = {elo}, Victorias = {victorias}, Torneos = {torneos}, Medallas = {medallas} Where [Nombre y Apellido] = '{nombreJugador}'"
+        cursor.execute(instrucccion)
+        instrucccion = f"UPDATE Medallas SET [Nombre y Apellido] = '{nombreCompleto}', Facultad = '{facultad}',  Torneos = {torneos}, Medallas = {medallas} Where [Nombre y Apellido] = '{nombreJugador}'"
         cursor.execute(instrucccion)
         return nombreJugador
     except Exception as e:
@@ -425,15 +422,18 @@ def editarTablaDespuesTorneo(nombreViejo, nombre, fecha, participantes, rondas, 
         conexion.commit()
         conexion.close()
 
-def actualizarDatosJugador(nombreJugador, elo, victorias, torneos, medallas, tipoMedalla=None):
+def actualizarDatosJugador(nombreJugador, facultad, elo, victorias, torneos, medallas, tipoMedalla=None):
     try:
         conexion = sql.connect("ajedrez.db")
         cursor = conexion.cursor()
         instruccion = f"UPDATE Jugadores SET Elo = {elo}, Victorias = {victorias}, Torneos = {torneos}, Medallas = {medallas} WHERE [Nombre y Apellido] = '{nombreJugador}'"
         cursor.execute(instruccion)
+        instruccion = f"INSERT OR IGNORE INTO Medallas ([Nombre y Apellido], Facultad, Torneos, Medallas) VALUES(?, ?, ?, ?)"
+        cursor.execute(instruccion, (nombreJugador, facultad, torneos, medallas))
         if tipoMedalla != None:
             instruccion = f"UPDATE Medallas SET Torneos = {torneos}, Medallas = {medallas}, {tipoMedalla} = {tipoMedalla}+1 WHERE [Nombre y Apellido] = '{nombreJugador}'"
             cursor.execute(instruccion)
+
         return nombreJugador
     except Exception as e:
         print("Error al actualizar datos (actualizarDatosJugador):", e)
@@ -499,16 +499,8 @@ def eliminarDatosJugador(nombreCompleto):
     try:
         conexion = sql.connect("ajedrez.db")
         cursor = conexion.cursor()
-        instrucccion = f"""SELECT EXISTS(
-                                    SELECT 1 
-                                    FROM Medallas 
-                                    WHERE [Nombre y Apellido] = '{nombreCompleto}'
-                                        )"""
+        instrucccion = f"DELETE FROM Jugadores WHERE [Nombre y Apellido] = '{nombreCompleto}'"
         cursor.execute(instrucccion)
-        resultado = cursor.fetchone()[0]
-        if bool(resultado) == True:
-            instrucccion = f"DELETE FROM Jugadores WHERE [Nombre y Apellido] = '{nombreCompleto}'"
-            cursor.execute(instrucccion)
         instrucccion = f"DELETE FROM Medallas WHERE [Nombre y Apellido] = '{nombreCompleto}'"
         cursor.execute(instrucccion)
     except Exception as e:
@@ -541,11 +533,15 @@ def eliminarJugadorMedallas(nombreCompleto):
         conexion.commit()
         conexion.close()
 
-def eliminarTorneo(nombreTorneo):
+def eliminarTorneo(nombre, nombreTorneos):
     try:
         conexion = sql.connect("ajedrez.db")
         cursor = conexion.cursor()
-        instrucccion = f"DELETE FROM listaTorneos WHERE Nombre = '{nombreTorneo}'"
+        instrucccion = f"DELETE FROM listaTorneos WHERE Nombre = '{nombre}'"
+        cursor.execute(instrucccion)
+        instrucccion = f"DROP TABLE '{"AT_"+nombreTorneos}'"
+        cursor.execute(instrucccion)
+        instrucccion = f"DROP TABLE '{"DT_"+nombreTorneos}'"
         cursor.execute(instrucccion)
     except Exception as e:
         print("Error al eliminar datos (eliminarTorneo):", e)

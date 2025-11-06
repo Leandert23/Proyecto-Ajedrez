@@ -62,8 +62,7 @@ def interfazJugadores1(ventanaMain):
     def editarJugador():
         fila = tabla.selection()
         datos = tabla.item(fila, 'values')
-        ventanaJugadores1.withdraw()
-        interfazJugadores4(ventanaMain, datos[0], datos[1], datos[2], datos[3], datos[4], datos[5], datos[6])
+        interfazJugadores4(ventanaJugadores1, datos[0], datos[1], datos[2], datos[3], datos[4], datos[5], datos[6])
 
     def borrarJugador():
         item = tabla.selection()
@@ -105,7 +104,7 @@ def interfazJugadores1(ventanaMain):
     estilo = ttk.Style()
     estilo.configure("Treeview.Heading", font= 20)
     estilo.configure("Treeview", font= 20, rowheight=20)
-    tabla = ttk.Treeview(frame, columns=("Nombre y Apellido","Género", "Facultad", "Elo", "Victorias", "Torneos", "Medallas"),  show="headings")
+    tabla = ttk.Treeview(frame, columns=("Nombre y Apellido","Género", "Facultad", "Elo", "Victorias", "Torneos", "Medallas"), show="headings")
     tabla.grid(row=0, column=0, columnspan=6, padx=5, pady=10, sticky="ew")
     tabla.bind("<Button-3>", menu)
 
@@ -135,12 +134,12 @@ def interfazJugadores1(ventanaMain):
     #botonBuscarJugador = tk.Button(ventanaJugadores1, text="Buscar Jugador", font=15, command=lambda: interfazJugadores3())
     #botonBuscarJugador.pack(padx=10, pady=10, side=tk.RIGHT)
 
-    botonCrearJugador = tk.Button(ventanaJugadores1, text="Agregar Jugador", font=15, command=lambda:(ventanaJugadores1.withdraw(), interfazJugadores2(ventanaMain)))
+    botonCrearJugador = tk.Button(ventanaJugadores1, text="Agregar Jugador", font=15, command=lambda:interfazJugadores2(ventanaJugadores1))
     botonCrearJugador.pack(padx=10, pady=10, side=tk.RIGHT)
 
     cargarJugadores()
 
-def interfazJugadores2(ventanaMain):
+def interfazJugadores2(ventana):
     #Funciones
     def crearJugador():
         if vl.validarNombre(entryNombreCompleto.get()) and len(entryNombreCompleto.get()) <= 20:
@@ -193,8 +192,7 @@ def interfazJugadores2(ventanaMain):
             labelError.after(3000, lambda:labelError.config(text="", bg="gray"))
             return
         labelError.config(text=f"!!Jugador creado con exito \n {respuesta}!!", bg="lightgray", font=12)
-        ventanaJugadores2.destroy()
-        labelError.after(2000, lambda:interfazJugadores1(ventanaMain))
+        labelError.after(2000, lambda:(ventanaJugadores2.destroy(), interfazJugadores1(ventana)))
     
     def nuevoJugador():
         if checkValorNuevo.get() == 1:
@@ -232,7 +230,7 @@ def interfazJugadores2(ventanaMain):
         entryNombreCompleto.focus()
 
     #Ventana
-    ventanaJugadores2 = tk.Toplevel(ventanaMain)
+    ventanaJugadores2 = tk.Toplevel(ventana)
     ventanaJugadores2.title("Jugadores")
     anchoVentana = 400
     altoVentana = 525
@@ -243,9 +241,10 @@ def interfazJugadores2(ventanaMain):
     ventanaJugadores2.focus_force()
     ventanaJugadores2.grab_set()
     ventanaJugadores2.configure(bg="lightgray")
-    ventanaJugadores2.bind("<Escape>", lambda e:(ventanaJugadores2.destroy(), interfazJugadores1(ventanaMain)))
+    ventanaJugadores2.bind("<Escape>", lambda e:(ventana.attributes('-disabled', False), ventanaJugadores2.destroy()))
     ventanaJugadores2.bind("<Return>", lambda e: crearJugador())
     ventanaJugadores2.protocol("WM_DELETE_WINDOW", lambda: (ventanaJugadores2.destroy(), sys.exit(0)))
+    ventana.attributes('-disabled', True)
 
     #Widgets
     labelTitulo = tk.Label(ventanaJugadores2, text="Agregar Jugador", font= 20)
@@ -391,7 +390,7 @@ def interfazJugadores3():
 
     ventana.mainloop
 """
-def interfazJugadores4(ventanaMain, nombreJugador, gen, fac, el, vict, torn, meda):
+def interfazJugadores4(ventana, nombreJugador, gen, fac, el, vict, torn, meda):
     #Funciones
     def insertarDatos():
         entryNombreCompleto.insert(0, nombreJugador)
@@ -456,9 +455,10 @@ def interfazJugadores4(ventanaMain, nombreJugador, gen, fac, el, vict, torn, med
             labelError.config(text="!!Ya existe un Jugador con estos datos \n por favor ingrese uno nuevo!!", bg="lightgray", font=12)
             labelError.after(3000, lambda:labelError.config(text="", bg="gray"))
             return
+
         labelError.config(text=f"!!Jugador editado con exito!!", bg="lightgray", font=12)
         ventanaJugadores4.destroy()
-        interfazJugadores1(ventanaMain)
+        interfazJugadores1(ventana)
     
     def limpiar():
         entryNombreCompleto.delete(0, tk.END) 
@@ -471,7 +471,7 @@ def interfazJugadores4(ventanaMain, nombreJugador, gen, fac, el, vict, torn, med
         entryNombreCompleto.focus()
 
     #Ventana
-    ventanaJugadores4 = tk.Toplevel(ventanaMain)
+    ventanaJugadores4 = tk.Toplevel(ventana)
     ventanaJugadores4.title("Jugadores")
     anchoVentana = 400
     altoVentana = 525
@@ -482,9 +482,10 @@ def interfazJugadores4(ventanaMain, nombreJugador, gen, fac, el, vict, torn, med
     ventanaJugadores4.focus_force()
     ventanaJugadores4.grab_set()
     ventanaJugadores4.configure(bg="lightgray")
-    ventanaJugadores4.bind("<Escape>", lambda e:(ventanaJugadores4.destroy(), interfazJugadores1(ventanaMain)))
+    ventanaJugadores4.bind("<Escape>", lambda e:(ventana.attributes('-disabled', False), ventanaJugadores4.destroy()))
     ventanaJugadores4.bind("<Return>", lambda e: editarJugador())
     ventanaJugadores4.protocol("WM_DELETE_WINDOW", lambda: (ventanaJugadores4.destroy(), sys.exit(0)))
+    ventana.attributes('-disabled', True)
 
     #Widgets
     labelTitulo = tk.Label(ventanaJugadores4, text="EditarJugador", font= 20)
