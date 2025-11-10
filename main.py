@@ -2,12 +2,8 @@ import tkinter as tk
 import torneo, datos, jugadores, baseDatos
 import sys
 ventanaMain = tk.Tk()
-ventanaMain.title("Ajedrez")
-anchoVentana = 500
-altoVentana = 300
-x = (ventanaMain.winfo_screenwidth() - anchoVentana)//2
-y = (ventanaMain.winfo_screenheight() - altoVentana)//2
-ventanaMain.geometry(f"{anchoVentana}x{altoVentana}+{x}+{y}")
+ventanaMain.title("ChessPyter")
+ventanaMain.geometry(f"{ventanaMain.winfo_screenwidth()}x{ventanaMain.winfo_screenheight()-50}+{-8}+{-2}")
 ventanaMain.configure(bg="lightgray")
 ventanaMain.protocol("WM_DELETE_WINDOW", lambda: (ventanaMain.destroy(), sys.exit(0)))
 
@@ -21,20 +17,25 @@ def interfazJugadores():
 
 def interfazDatos():
     ventanaMain.withdraw()
-    datos.interfazDatos1(ventanaMain)   
+    datos.interfazDatos1(ventanaMain)
 
-botonTorneo = tk.Button(ventanaMain, text= "Nuevo Torneo", bg="gray", fg="black", command= interfazTorneo, font=30)
-botonTorneo.pack(padx=50, pady= 10, fill=tk.BOTH, expand=True)
-botonJugadores = tk.Button(ventanaMain, text= "Jugadores", bg="gray", fg="black", command= interfazJugadores, font=30)
-botonJugadores.pack(padx=50, pady=10, fill=tk.BOTH, expand=True)
-botonDatos = tk.Button(ventanaMain, text= "Datos", bg="gray", fg="black", command= interfazDatos, font=30)
-botonDatos.pack(padx=50, pady=10, fill=tk.BOTH, expand=True)
-etiquetaVersion = tk.Label(ventanaMain, text="Versión 1.0", bg="lightgray", fg="black").pack()
+labelTitulo = tk.Label(ventanaMain, text=f"  ChessPyter  ", font=("Impact", 25))
+labelTitulo.pack(pady=(30,15))
+
+frame = tk.Frame(ventanaMain, bd=10, bg="gray", width=500, height=400)
+frame.pack()
+frame.pack_propagate(False) 
+
+botonTorneo = tk.Button(frame, text= "Nuevo Torneo", bg="lightgray", command= interfazTorneo, font=("Impact", 20))
+botonTorneo.pack(padx=20, pady= (20,10),fill=tk.BOTH, expand=True)
+botonJugadores = tk.Button(frame, text= "Jugadores", bg="lightgray", command= interfazJugadores, font=("Impact", 20))
+botonJugadores.pack(padx=20, pady=10, fill=tk.BOTH, expand=True)
+botonDatos = tk.Button(frame, text= "Datos", bg="lightgray", command= interfazDatos, font=("Impact", 20))
+botonDatos.pack(padx=20, pady=(10,20), fill=tk.BOTH, expand=True)
+etiquetaVersion = tk.Label(ventanaMain, text="Versión 1.0", bg="lightgray", font=("Impact", 12))
+etiquetaVersion.pack()
 
 baseDatos.crearTablaJugadores()
 baseDatos.crearTablaListaTorneos()
 baseDatos.crearTablaMedallas()
 ventanaMain.mainloop()
-
-
-

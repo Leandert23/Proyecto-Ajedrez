@@ -24,16 +24,19 @@ def consultarDatosJugadores(filtro=None):
             
         cursor.execute(instrucccion)
         resultados = cursor.fetchall()
+        if resultados == None:
+            return True
+        
         return resultados
     except Exception as e:
         print("Error al consultar datos (consultarDatosJugadores):", e)
+        return True
     finally:
         conexion.commit()
         conexion.close()
 #Consultar datos de un jugador específico
 def consultarDatosJugador(nombreTorneo, nombreJugador, antesTorneo):
     try:
-        #print("Consultando datos de jugador:", nombreJugador)
         conexion = sql.connect("ajedrez.db")
         cursor = conexion.cursor()
         if antesTorneo == True:
@@ -41,16 +44,21 @@ def consultarDatosJugador(nombreTorneo, nombreJugador, antesTorneo):
             cursor.execute(instrucccion)
             datosJugador = cursor.fetchall()
             datosJugador = list(datosJugador[0])
+            if datosJugador == None:
+                return False
             respuesta = agregarDatosAntesTorneo(nombreTorneo, list(datosJugador))
         else:
             instrucccion = f"SELECT [Nombre y Apellido], Genero, Facultad, Elo, Victorias, Medallas, Torneos FROM Jugadores WHERE [Nombre y Apellido] == '{nombreJugador}'"
             cursor.execute(instrucccion)
             datosJugador = cursor.fetchall()
             datosJugador = list(datosJugador[0])
+            if datosJugador == None:
+                return True
             respuesta = agregarDatosDespuesTorneo(nombreTorneo, list(datosJugador), antesTorneo)
         return respuesta
     except Exception as e:
         print("Error al consultar datos (consultarDatosJugador):", e)
+        return True
     finally:
         conexion.commit()
         conexion.close()
@@ -77,7 +85,7 @@ def consultarDatosDespuesTorneo(nombreTorneo):
         #print("Consultando datos del torneo:", nombreTorneo)
         conexion = sql.connect("ajedrez.db")
         cursor = conexion.cursor()
-        instrucccion = f"SELECT * FROM '{nombreTorneo}'ORDER BY Puntos DESC, [Desempate (1)] DESC, [Desempate (2)] DESC"
+        instrucccion = f"SELECT * FROM '{nombreTorneo}' ORDER BY Puntos DESC, [Desempate (1)] DESC, [Desempate (2)] DESC"
         cursor.execute(instrucccion)
         jugadoresInscritos = cursor.fetchall()
         return jugadoresInscritos
@@ -228,7 +236,6 @@ def crearTablaDespuesTorneo(nombre, fecha, participantes, rondas, invitados, des
         return nombreTorneo
     except Exception as e:
         print("Error al agregar datos (crearTablaDespuesTorneo):", e)
-        return True
     finally:
         conexion.commit()
         conexion.close()
@@ -513,7 +520,7 @@ def eliminarTabla(nombreTorneo):
     try:
         conexion = sql.connect("ajedrez.db")
         cursor = conexion.cursor()
-        instrucccion = f"DROP TABLE '{nombreTorneo}'"
+        instrucccion = f"DROP TABLE IF EXISTS '{nombreTorneo}'"
         cursor.execute(instrucccion)
     except Exception as e:
         print("Error al eliminar datos (eliminarTabla):", e)
@@ -539,14 +546,13 @@ def eliminarTorneo(nombre, nombreTorneos):
         cursor = conexion.cursor()
         instrucccion = f"DELETE FROM listaTorneos WHERE Nombre = '{nombre}'"
         cursor.execute(instrucccion)
-        instrucccion = f"DROP TABLE '{"AT_"+nombreTorneos}'"
+        instrucccion = f"DROP TABLE IF EXISTS '{"AT_"+nombreTorneos}'"
         cursor.execute(instrucccion)
-        instrucccion = f"DROP TABLE '{"DT_"+nombreTorneos}'"
+        instrucccion = f"DROP TABLE IF EXISTS '{"DT_"+nombreTorneos}'"
         cursor.execute(instrucccion)
     except Exception as e:
         print("Error al eliminar datos (eliminarTorneo):", e)
     finally:
         conexion.commit()
         conexion.close()
-
 
