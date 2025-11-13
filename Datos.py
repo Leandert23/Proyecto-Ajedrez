@@ -1,6 +1,7 @@
 import tkinter as tk
 import baseDatos as bd
 import validaciones as vl
+import torneo as tn
 from tkcalendar import DateEntry
 from tkinter import ttk, messagebox
 import sys
@@ -10,13 +11,18 @@ def interfazDatos1(ventanaMain):
     def cargarJugadores():
         filtro = botonFiltrar.cget("text")
         if filtro == "Femenino":
-            botonFiltrar.config(text="General")
+            botonFiltrar.config(text="  General  ")
         else:
-            botonFiltrar.config(text="Femenino")
+            botonFiltrar.config(text="  Femenino  ")
 
         for fila in tabla.get_children():
             tabla.delete(fila)
         datos = bd.consultarDatosRanking(filtro)
+
+        if datos == True:
+            ventanaDatos1.attributes('-disabled', False)
+            messagebox.showerror("Error", " !!Error al consultar datos!! \n Jugadores no encontrados")
+            return
 
         if len(datos) > 0:
             labelJugadores.config(text=f"  Jugadores: {len(datos)}  ", font=("Impact", 16))
@@ -62,7 +68,7 @@ def interfazDatos1(ventanaMain):
                     tag = "Plata"
                 else:
                     tag = "Bronce"
-            elif registro[1] == "F" and femenina:
+            elif registro[1] == "F" and femenina and filtro == "  General  ":
                 tag = "Femenina"
                 femenina = False
             
@@ -73,12 +79,6 @@ def interfazDatos1(ventanaMain):
             scrollbar = ttk.Scrollbar(frame, orient=tk.VERTICAL, command=tabla.yview)
             tabla.configure(yscroll=scrollbar.set)
             scrollbar.grid(row=0, column=6, sticky="ns")
-    
-    """   def actualizarLista():
-        print("Actualizando lista de jugadores...")
-        for dato in tabla.get_children():
-            tabla.delete(dato)
-        cargarJugadores()"""
 
     def desseleccionarFila():
         for fila in tabla.selection():
@@ -135,7 +135,7 @@ def interfazDatos1(ventanaMain):
     labelJugadores = tk.Label(frame, text="  Jugadores: 0  ", bg="lightgray", font=("Impact", 16))
     labelJugadores.grid(row=1, column=0, sticky="w")
 
-    botonFiltrar = tk.Button(frame, text="General", bg="lightgray", font=("Impact", 14),  command= cargarJugadores)
+    botonFiltrar = tk.Button(frame, text="  General  ", bg="lightgray", font=("Impact", 14),  command= cargarJugadores)
     botonFiltrar.grid(row=1, column=1, pady=5, sticky="e")
 
 
@@ -147,6 +147,11 @@ def interfazDatos2(ventanaMain):
         for fila in tabla.get_children():
             tabla.delete(fila)
         datos = bd.consultarDatosListaTorneos(filtro)
+
+        if datos == True:
+            ventanaDatos2.attributes('-disabled', False)
+            messagebox.showerror("Error", " !!Error al consultar datos!! \n Torneos no encontrados")
+            return
 
         if len(datos) > 0:
             labelTorneos.config(text=f"  Torneos: {len(datos)}  ")
@@ -164,7 +169,7 @@ def interfazDatos2(ventanaMain):
             tabla.tag_configure("Invitado", background="#73bf00", foreground="#FFFFFF")
             tabla.tag_configure("Normal", background="#545050", foreground="#FFFFFF")
                                                #nombre,     fecha,    participantes,  rondas,    invitados,   descripcion
-            tabla.insert("", tk.END, values=(registro[0], registro[1], registro[2], registro[3], registro[4], (f"{registro[5] if registro[5] != "" else "Ninguna"}")), tags=(tag))
+            tabla.insert("", tk.END, values=(registro[0], registro[1], registro[2], registro[3], registro[4], (f"{registro[5] if registro[5] != "" else "Ninguna"}"), registro[6]), tags=(tag))
             
         if len(datos) > 10:
             scrollbar = ttk.Scrollbar(frame, orient=tk.VERTICAL, command=tabla.yview)
@@ -175,14 +180,18 @@ def interfazDatos2(ventanaMain):
         fila = tabla.identify_row(evento.y)
         if fila:
             tabla.selection_set(fila)
-            menu.tk_popup(evento.x_root, evento.y_root)
+            datos = tabla.item(fila, 'values')
+            if datos[6] == "✖":
+                menu2.tk_popup(evento.x_root, evento.y_root)
+                return
+            menu1.tk_popup(evento.x_root, evento.y_root)
 
     def editarTorneo():
         fila = tabla.selection()
         datos = tabla.item(fila, 'values')
         datosTorneo = (datos[0], datos[1], datos[2], datos[3], datos[4], datos[5])
         nombreTorneo = f"{datos[0]}_{datos[1]}_P{datos[2]}_R{datos[3]}_{datos[4]}{"_" if datos[5] != "Ninguna" else ""}{datos[5] if datos[5] != "Ninguna" else ""}"
-        interfazDatos6(ventanaDatos2, nombreTorneo, datosTorneo)
+        interfazDatos6(ventanaDatos2, nombreTorneo, datosTorneo, cargarTorneos)
 
     def borrarTorneo():
         fila = tabla.selection()
@@ -193,13 +202,21 @@ def interfazDatos2(ventanaMain):
             nombreTorneo = f"{datos[0]}_{datos[1]}_P{datos[2]}_R{datos[3]}_{datos[4]}{"_" if datos[5] != "Ninguna" else ""}{datos[5] if datos[5] != "Ninguna" else ""}"
             bd.eliminarTorneo(datos[0], nombreTorneo) 
             cargarTorneos()
-    
+
     def verTorneo():
         fila = tabla.selection()
         datos = tabla.item(fila, 'values')
         datosTorneo = (datos[0], datos[1], datos[2], datos[3], datos[4], datos[5])
         nombreTorneo = f"{datos[0]}_{datos[1]}_P{datos[2]}_R{datos[3]}_{datos[4]}{"_" if datos[5] != "Ninguna" else ""}{datos[5] if datos[5] != "Ninguna" else ""}"
         interfazDatos5(ventanaDatos2, nombreTorneo, datosTorneo)
+
+    def continuarTorneo():
+        fila = tabla.selection()
+        datos = tabla.item(fila, 'values')
+        datosTorneo = (datos[0], datos[1], datos[2], datos[3], datos[4], (f"{"_" if datos[5] != "Ninguna" else ""}{datos[5] if datos[5] != "Ninguna" else ""}"))
+        nombreTorneo = f"AT_{datos[0]}_{datos[1]}_P{datos[2]}_R{datos[3]}_{datos[4]}{"_" if datos[5] != "Ninguna" else ""}{datos[5] if datos[5] != "Ninguna" else ""}"
+        ventanaDatos2.withdraw()
+        tn.interfazTorneo2(ventanaDatos2, nombreTorneo, datosTorneo)
 
     def desseleccionarFila():
         for fila in tabla.selection():
@@ -237,7 +254,7 @@ def interfazDatos2(ventanaMain):
     estilo = ttk.Style()
     estilo.configure("Treeview.Heading", font=("Impact", 17))
     estilo.configure("Treeview", rowheight= 35, font=("Impact", 16))
-    tabla = ttk.Treeview(frame, columns=("Nombre", "Fecha", "Participantes", "Rondas", "Invitados", "Descripción"),  show="headings")
+    tabla = ttk.Treeview(frame, columns=("Nombre", "Fecha", "Participantes", "Rondas", "Invitados", "Descripción", "Estado"),  show="headings")
     tabla.grid(row=0, column=0, columnspan=6, padx=5, pady=10, sticky="ew")
     tabla.bind("<Button-3>", menu)
 
@@ -247,6 +264,7 @@ def interfazDatos2(ventanaMain):
     tabla.column("Rondas", anchor=tk.CENTER, width=115)
     tabla.column("Invitados", anchor=tk.CENTER, width=125)
     tabla.column("Descripción", anchor=tk.CENTER, width=200)
+    tabla.column("Estado", anchor=tk.CENTER, width=100)
 
     tabla.heading("Nombre", text="Nombre", command=lambda:cargarTorneos("Nombre"))
     tabla.heading("Fecha", text="Fecha", command=lambda:cargarTorneos())
@@ -254,11 +272,17 @@ def interfazDatos2(ventanaMain):
     tabla.heading("Rondas", text="Rondas", command=lambda:cargarTorneos("Rondas"))
     tabla.heading("Invitados", text="Invitados", command=lambda:cargarTorneos("Invitados"))
     tabla.heading("Descripción", text="Descripción", command=lambda:cargarTorneos("Descripcion"))
+    tabla.heading("Estado", text="Estado", command=lambda:cargarTorneos("Estado"))
 
-    menu = tk.Menu(ventanaDatos2, tearoff=0)
-    menu.add_command(label="Ver", command=verTorneo)
-    menu.add_command(label="Editar", command=editarTorneo)
-    menu.add_command(label="Borrar", command=borrarTorneo)
+    menu1 = tk.Menu(ventanaDatos2, tearoff=0)
+    menu1.add_command(label="Ver", command=verTorneo)
+    menu1.add_command(label="Editar", command=editarTorneo)
+    menu1.add_command(label="Borrar", command=borrarTorneo)
+
+    menu2 = tk.Menu(ventanaDatos2, tearoff=0)
+    menu2.add_command(label="Continuar", command=continuarTorneo)
+    menu2.add_command(label="Borrar", command=borrarTorneo)
+
 
     labelTorneos = tk.Label(frame, text="  Torneos: 0  ", bg="lightgray", font=("Impact", 16))
     labelTorneos.grid(row=1, column=0, pady=10)
@@ -268,7 +292,7 @@ def interfazDatos2(ventanaMain):
 def interfazDatos3(ventanaMain):
     #Funciones
     def cargarTabla():
-        datos = bd.consultarDatosJugadores()
+        datos = bd.consultarDatosJugadores("Medallas2")
         for registro in datos:
             bd.agregarDatosMedallas(registro)
         cargarJugadores()
@@ -277,6 +301,11 @@ def interfazDatos3(ventanaMain):
         for fila in tabla.get_children():
             tabla.delete(fila)
         datos = bd.consultarDatosMedallas(filtro)
+
+        if datos == True:
+            ventanaDatos3.attributes('-disabled', False)
+            messagebox.showerror("Error", " !!Error al consultar datos!! \n Jugadores no encontrados")
+            return
 
         if len(datos) > 0:
             labeljugadores.config(text=f"  Jugadores: {len(datos)}  ", font=("Impact", 16))
@@ -332,12 +361,6 @@ def interfazDatos3(ventanaMain):
             scrollbar = ttk.Scrollbar(frame, orient=tk.VERTICAL, command=tabla.yview)
             tabla.configure(yscroll=scrollbar.set)
             scrollbar.grid(row=0, column=6, sticky="ns")
-    
-    """   def actualizarLista():
-        print("Actualizando lista de jugadores...")
-        for dato in tabla.get_children():
-            tabla.delete(dato)
-        cargarJugadores()"""
     
     def menu(evento):
         fila = tabla.identify_row(evento.y)
@@ -556,7 +579,7 @@ def interfazDatos5(ventana, nombreTorneo, datosTorneo):
         for fila in tabla.get_children():
             tabla.delete(fila)
 
-        if botonCambio.cget("text") == "  Despues Torneo  ":
+        if botonCambio.cget("text") == "Despues Torneo":
             datos = bd.consultarDatosAntesTorneo("AT_"+nombreTorneo)
         else:
             datos = bd.consultarDatosDespuesTorneo("DT_"+nombreTorneo)
@@ -566,7 +589,6 @@ def interfazDatos5(ventana, nombreTorneo, datosTorneo):
             ventana.attributes('-disabled', False)
             messagebox.showerror("Error", "!!Torneo no encontrado!!")
             return
-        
         if botonCambio.cget("text") == "Despues Torneo":
             tabla.column("Col1", anchor=tk.CENTER, width=200)
             tabla.column("Col2", anchor=tk.CENTER, width=120)
@@ -707,7 +729,7 @@ def interfazDatos5(ventana, nombreTorneo, datosTorneo):
 
     cargarTabla()
 
-def interfazDatos6(ventana, nombreTorneo, datosTorneo):
+def interfazDatos6(ventana, nombreTorneo, datosTorneo, funcion):
     #Funciones
     #(nombre, fecha, participantes, rondas, invitados, descripcion)
     def insertarDatos():
@@ -720,10 +742,10 @@ def interfazDatos6(ventana, nombreTorneo, datosTorneo):
         if vl.validarNombre(entryNombre.get()):
             nombre = entryNombre.get()
         else:
-            messagebox.showwarning("Advertencia", f" !El nombre solo debe tener caracteres alfanúmericos! \n Máximo 15 caracteres")
+            messagebox.showwarning("Advertencia", f" !El nombre solo debe tener caracteres alfanúmericos! \n Máximo 20 caracteres")
             return
         
-        fecha = str(entryFecha.get_date()).replace("-", "/")   
+        fecha = str(entryFecha.get_date()).replace("-", "/")
 
         if vl.validarTexto(entryDescripcion.get()):
             descripcion = entryDescripcion.get()
@@ -738,8 +760,9 @@ def interfazDatos6(ventana, nombreTorneo, datosTorneo):
             messagebox.showwarning("Advertencia", f"!Ya existe un torneo con ese nombre! \n Por favor ingrese uno nuevo")
             return
         
+        ventana.attributes('-disabled', False)
         ventanaDatos6.destroy()
-        interfazDatos2(ventana)
+        funcion()
 
     def limpiar():
         entryNombre.delete(0, tk.END)
@@ -788,7 +811,7 @@ def interfazDatos6(ventana, nombreTorneo, datosTorneo):
     entryNombre.grid(row=0, column=1, padx=10, pady=10, sticky="ew")
     ventanaDatos6.after(10, lambda:entryNombre.focus())
 
-    entryFecha = DateEntry(frame, date_pattern='dd-mm-yy', bg="gray", font=("Impact", 16), state="readonly")
+    entryFecha = DateEntry(frame, date_pattern='dd/mm/yy', bg="gray", font=("Impact", 16), state="readonly")
     entryFecha.grid(row=1, column=1, padx=10, pady=10, sticky="ew")
 
     entryDescripcion = tk.Entry(frame, font=("Impact", 16))

@@ -1,5 +1,5 @@
 def validarNombre(nombre):
-    if len(nombre) > 15:
+    if len(nombre) > 20:
         return False
     if nombre.strip() == "":
             return False

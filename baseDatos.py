@@ -19,8 +19,10 @@ def consultarDatosJugadores(filtro=None):
             instrucccion = "SELECT * FROM Jugadores ORDER BY Torneos DESC"
         elif filtro == "Medallas":
             instrucccion = "SELECT * FROM Jugadores ORDER BY Medallas DESC"
-        else:
+        elif filtro == "Medallas2":
             instrucccion = "SELECT [Nombre y Apellido], Facultad, Torneos, Medallas FROM Jugadores Where Medallas > 0 ORDER BY Medallas DESC, Torneos ASC"
+        else:
+            instrucccion = f"SELECT * FROM Jugadores Where [Nombre y Apellido] COLLATE NOCASE like '%{filtro}%'"
             
         cursor.execute(instrucccion)
         resultados = cursor.fetchall()
@@ -109,11 +111,16 @@ def consultarDatosListaTorneos(filtro):
             instrucccion = "SELECT * FROM listaTorneos ORDER BY Invitados COLLATE NOCASE DESC"
         elif filtro == "Descripcion":
             instrucccion = "SELECT * FROM listaTorneos ORDER BY Descripcion COLLATE NOCASE ASC"
+        elif filtro == "Estado":
+            instrucccion = "SELECT * FROM listaTorneos ORDER BY Estado DESC"
         else:
             instrucccion = "SELECT * FROM listaTorneos ORDER BY Fecha COLLATE NOCASE DESC"
 
         cursor.execute(instrucccion)
         resultados = cursor.fetchall()
+        if resultados == None:
+            return True
+        
         return resultados
     except Exception as e:
         print("Error al consultar datos (consultarDatosListaTorneos):", e)
@@ -131,6 +138,8 @@ def consultarDatosRanking(filtro):
             instrucccion = "SELECT * FROM Jugadores WHERE Facultad != 'Invitado' ORDER BY Elo DESC, Victorias DESC, Medallas DESC"
         cursor.execute(instrucccion)
         resultados = cursor.fetchall()
+        if resultados == None:
+            return True
         return resultados
     except Exception as e:
         print("Error al consultar datos (consultarDatosRanking):", e)
@@ -143,28 +152,31 @@ def consultarDatosMedallas(filtro):
         conexion = sql.connect("ajedrez.db")
         cursor = conexion.cursor()
         if filtro == "Nombre":
-            instrucccion = "SELECT * FROM Medallas ORDER BY [Nombre y Apellido] COLLATE NOCASE ASC"
+            instrucccion = "SELECT * FROM Medallas WHERE Facultad != 'Invitado' ORDER BY [Nombre y Apellido] COLLATE NOCASE ASC"
         elif filtro == "Facultad":
-            instrucccion = "SELECT * FROM Medallas ORDER BY Facultad COLLATE NOCASE ASC"
+            instrucccion = "SELECT * FROM Medallas WHERE Facultad != 'Invitado' ORDER BY Facultad COLLATE NOCASE ASC"
         elif filtro == "Torneos":
-            instrucccion = "SELECT * FROM Medallas ORDER BY Torneos DESC"
+            instrucccion = "SELECT * FROM Medallas WHERE Facultad != 'Invitado' ORDER BY Torneos DESC"
         elif filtro == "Medallas":
-            instrucccion = "SELECT * FROM Medallas ORDER BY Medallas DESC"
+            instrucccion = "SELECT * FROM Medallas WHERE Facultad != 'Invitado' ORDER BY Medallas DESC"
         elif filtro == "Oro":
-            instrucccion = "SELECT * FROM Medallas ORDER BY Oro DESC"
+            instrucccion = "SELECT * FROM Medallas WHERE Facultad != 'Invitado' ORDER BY Oro DESC"
         elif filtro == "Plata":
-            instrucccion = "SELECT * FROM Medallas ORDER BY Plata DESC"
+            instrucccion = "SELECT * FROM Medallas WHERE Facultad != 'Invitado' ORDER BY Plata DESC"
         elif filtro == "Bronce":
-            instrucccion = "SELECT * FROM Medallas ORDER BY Bronce DESC"
+            instrucccion = "SELECT * FROM Medallas WHERE Facultad != 'Invitado' ORDER BY Bronce DESC"
         elif filtro == "Otra":
-            instrucccion = "SELECT * FROM Medallas ORDER BY Otra DESC"
+            instrucccion = "SELECT * FROM Medallas WHERE Facultad != 'Invitado' ORDER BY Otra DESC"
         elif filtro == "Estado":
-            instrucccion = "SELECT * FROM Medallas ORDER BY Estado DESC"
+            instrucccion = "SELECT * FROM Medallas WHERE Facultad != 'Invitado' ORDER BY Estado DESC"
         else:
-            instrucccion = "SELECT * FROM Medallas ORDER BY Medallas DESC, Torneos ASC, Oro DESC, Plata DESC, Bronce DESC, Otra DESC"
+            instrucccion = "SELECT * FROM Medallas WHERE Facultad != 'Invitado' ORDER BY Medallas DESC, Torneos ASC, Oro DESC, Plata DESC, Bronce DESC, Otra DESC"
 
         cursor.execute(instrucccion)
         resultados = cursor.fetchall()
+        if resultados == None:
+            return True
+        
         return resultados
     except Exception as e:
         print("Error al consultar datos (consultarDatosMedallas):", e)
@@ -267,11 +279,12 @@ def crearTablaListaTorneos():
         cursor = conexion.cursor()
         instrucccion = f"""CREATE TABLE IF NOT EXISTS listaTorneos (
                                                                 Nombre TEXT,
-                                                                Fecha TEXT DEFAULT '00))/00/00',
+                                                                Fecha TEXT DEFAULT '00/00/00',
                                                                 Participantes INTEGER DEFAULT 0,
                                                                 Rondas INTEGER DEFAULT 0,
                                                                 Invitados TEXT DEFAULT 'False',
                                                                 Descripcion	TEXT DEFAULT 'Ninguna',
+                                                                Estado TEXT DEFAULT '✖',
                                                                 PRIMARY KEY('Nombre')
                                                                 )"""
         cursor.execute(instrucccion)
@@ -294,7 +307,7 @@ def crearTablaMedallas():
                                                                 Plata INTEGER DEFAULT 0,
                                                                 Bronce INTEGER DEFAULT 0,
                                                                 Otra INTEGER DEFAULT 0,
-                                                                Estado TEXT DEFAUL '✖',
+                                                                Estado TEXT DEFAULT '✖',
                                                                 PRIMARY KEY('Nombre y Apellido')
                                                                 )"""
         cursor.execute(instrucccion)
@@ -349,7 +362,7 @@ def agregarDatosListaTorneos(*datosTorneo):
     try:
         conexion = sql.connect("ajedrez.db")
         cursor = conexion.cursor()
-        instrucccion = f"INSERT INTO listaTorneos VALUES(?, ?, ?, ?, ?, ?)"
+        instrucccion = f"INSERT INTO listaTorneos VALUES(?, ?, ?, ?, ?, ?, ?)"
         cursor.execute(instrucccion, datosTorneo)
     except Exception as e:
         print("Error al agregar datos (agregarDatosListaTorneos):", e)
@@ -403,7 +416,7 @@ def editarTablaAntesTorneo(nombreViejo, nombre, fecha, participantes, rondas, in
     try:
         conexion = sql.connect("ajedrez.db")
         cursor = conexion.cursor()
-        nombreNuevo = f"AT_{nombre}_{fecha}_P{participantes}_R{rondas}_{invitados}{"_" if descripcion != "" else ""}{descripcion}".replace("-", "/")
+        nombreNuevo = f"AT_{nombre}_{fecha}_P{participantes}_R{rondas}_{invitados}{"_" if descripcion != "" else ""}{descripcion}"
         instrucccion = f"ALTER TABLE '{nombreViejo}' RENAME TO '{nombreNuevo}'"
         cursor.execute(instrucccion)
         return nombreNuevo
@@ -418,7 +431,7 @@ def editarTablaDespuesTorneo(nombreViejo, nombre, fecha, participantes, rondas, 
     try:
         conexion = sql.connect("ajedrez.db")
         cursor = conexion.cursor()
-        nombreNuevo = f"DT_{nombre}_{fecha}_P{participantes}_R{rondas}_{invitados}{"_" if descripcion != "" else ""}{descripcion}".replace("-", "/")
+        nombreNuevo = f"DT_{nombre}_{fecha}_P{participantes}_R{rondas}_{invitados}{"_" if descripcion != "" else ""}{descripcion}"
         instrucccion = f"ALTER TABLE '{nombreViejo}' RENAME TO '{nombreNuevo}'"
         cursor.execute(instrucccion)
         return nombreNuevo
@@ -490,6 +503,19 @@ def editarTablaListaTorneo(nombreTorneo, nombre, fecha, descripcion):
         conexion.commit()
         conexion.close()       
 
+def actualizarTablaListaTorneo(nombreTorneo):
+    try:
+        conexion = sql.connect("ajedrez.db")
+        cursor = conexion.cursor()
+        instrucccion = f"UPDATE listaTorneos SET Estado = '✔' Where Nombre = '{nombreTorneo}'"
+        cursor.execute(instrucccion)
+    except Exception as e:
+        print("Error al actualizar datos (actualizarTablaListaTorneo):", e)
+        return True
+    finally:
+        conexion.commit()
+        conexion.close() 
+
 def eliminarJugadorTorneo(nombreTorneo, nombreCompleto):
     try:
         conexion = sql.connect("ajedrez.db")
@@ -516,18 +542,6 @@ def eliminarDatosJugador(nombreCompleto):
         conexion.commit()
         conexion.close()
 
-def eliminarTabla(nombreTorneo):
-    try:
-        conexion = sql.connect("ajedrez.db")
-        cursor = conexion.cursor()
-        instrucccion = f"DROP TABLE IF EXISTS '{nombreTorneo}'"
-        cursor.execute(instrucccion)
-    except Exception as e:
-        print("Error al eliminar datos (eliminarTabla):", e)
-    finally:
-        conexion.commit()
-        conexion.close()
-
 def eliminarJugadorMedallas(nombreCompleto):
     try:
         conexion = sql.connect("ajedrez.db")
@@ -540,15 +554,15 @@ def eliminarJugadorMedallas(nombreCompleto):
         conexion.commit()
         conexion.close()
 
-def eliminarTorneo(nombre, nombreTorneos):
+def eliminarTorneo(nombre, nombreTorneo):
     try:
         conexion = sql.connect("ajedrez.db")
         cursor = conexion.cursor()
         instrucccion = f"DELETE FROM listaTorneos WHERE Nombre = '{nombre}'"
         cursor.execute(instrucccion)
-        instrucccion = f"DROP TABLE IF EXISTS '{"AT_"+nombreTorneos}'"
+        instrucccion = f"DROP TABLE IF EXISTS '{"AT_"+nombreTorneo}'"
         cursor.execute(instrucccion)
-        instrucccion = f"DROP TABLE IF EXISTS '{"DT_"+nombreTorneos}'"
+        instrucccion = f"DROP TABLE IF EXISTS '{"DT_"+nombreTorneo}'"
         cursor.execute(instrucccion)
     except Exception as e:
         print("Error al eliminar datos (eliminarTorneo):", e)

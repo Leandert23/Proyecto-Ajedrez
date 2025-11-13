@@ -9,6 +9,7 @@ def interfazJugadores1(ventanaMain):
     def cargarJugadores(filtro="Nombre"):
         for fila in tabla.get_children():
             tabla.delete(fila)
+
         datos = bd.consultarDatosJugadores(filtro)
 
         if datos == True:
@@ -125,8 +126,16 @@ def interfazJugadores1(ventanaMain):
     labelJugadores = tk.Label(frame, text="  Jugadores: 0  ", bg="lightgray", font=("Impact", 16))
     labelJugadores.grid(row=1, column=0, sticky="w")
 
-    botonCrearJugador = tk.Button(frame, text="  Agregar Jugador  ", bg="lightgray", font=("Impact", 14), command=lambda:interfazJugadores2(ventanaJugadores1, cargarJugadores))
-    botonCrearJugador.grid(row=1, column=1, pady=5, sticky="e")
+    labelBusqueda = tk.Label(frame, text="  Buscar:  ", bg="lightgray", font=("Impact", 16))
+    labelBusqueda.grid(row=1, column=1, sticky="w")
+
+    entryBusqueda = tk.Entry(frame, font=("Impact", 16))
+    entryBusqueda.grid(row=1, column=2, padx=(0,20), sticky="ew")
+    ventanaJugadores1.after(100, lambda:entryBusqueda.focus())
+    entryBusqueda.bind("<KeyRelease>", lambda e:cargarJugadores(entryBusqueda.get()))
+
+    botonCrearJugador = tk.Button(frame, text="  Agregar  ", bg="lightgray", font=("Impact", 14), command=lambda:interfazJugadores2(ventanaJugadores1, cargarJugadores))
+    botonCrearJugador.grid(row=1, column=3, pady=5, padx=5, sticky="e")
 
     cargarJugadores()
 
