@@ -9,7 +9,7 @@ import sys
 def interfazDatos1(ventanaMain):
     #Funciones
     def cargarJugadores():
-        filtro = botonFiltrar.cget("text")
+        filtro = botonFiltrar.cget("text").replace(" ", "")
         if filtro == "Femenino":
             botonFiltrar.config(text="  General  ")
         else:
@@ -49,10 +49,10 @@ def interfazDatos1(ventanaMain):
             else:
                 tag = "UJAP"
 
-            tabla.tag_configure("Oro", background="#DEDE2C", foreground="#FFFFFF", font=("Impact", 16, "italic"))
-            tabla.tag_configure("Plata", background="#545050", foreground="#FFFFFF", font=("Impact", 16, "italic"))
-            tabla.tag_configure("Bronce", background="#8D4416", foreground="#FFFFFF", font=("Impact", 16, "italic"))
-            tabla.tag_configure("Femenina", background="#DE2C50", foreground="#FFFFFF", font=("Impact", 16, "italic"))
+            tabla.tag_configure("Oro", background="#DEDE2C", foreground="#FFFFFF")
+            tabla.tag_configure("Plata", background="#545050", foreground="#FFFFFF")
+            tabla.tag_configure("Bronce", background="#8D4416", foreground="#FFFFFF")
+            tabla.tag_configure("Femenina", background="#DE2C50", foreground="#FFFFFF")
             tabla.tag_configure("Ingeniería", background="#00008B", foreground="#FFFFFF")
             tabla.tag_configure("Sociales", background="#A52A2A", foreground="#FFFFFF")
             tabla.tag_configure("Arquitectura", background="#402169", foreground="#FFFFFF")
@@ -68,7 +68,7 @@ def interfazDatos1(ventanaMain):
                     tag = "Plata"
                 else:
                     tag = "Bronce"
-            elif registro[1] == "F" and femenina and filtro == "  General  ":
+            elif registro[1] == "F" and femenina and filtro == "  General  ".replace(" ", ""):
                 tag = "Femenina"
                 femenina = False
             
@@ -114,8 +114,8 @@ def interfazDatos1(ventanaMain):
 
     estilo = ttk.Style()
     estilo.configure("Treeview.Heading", font=("Impact", 17))
-    estilo.configure("Treeview", rowheight= 35, font=("Impact", 16))
-    tabla = ttk.Treeview(frame, columns=("#","Nombre y Apellido", "Género", "Facultad", "Elo", "Victorias"),  show="headings")
+    estilo.configure("Treeview", rowheight= 25, font=("Impact", 16))
+    tabla = ttk.Treeview(frame, columns=("#","Nombre y Apellido", "Género", "Facultad", "Elo", "Victorias"), show="headings", height=15)
     tabla.grid(row=0, column=0, columnspan=6, padx=5, pady=10, sticky="ew")
 
     tabla.column("#", anchor=tk.CENTER, width=60)
@@ -253,8 +253,8 @@ def interfazDatos2(ventanaMain):
 
     estilo = ttk.Style()
     estilo.configure("Treeview.Heading", font=("Impact", 17))
-    estilo.configure("Treeview", rowheight= 35, font=("Impact", 16))
-    tabla = ttk.Treeview(frame, columns=("Nombre", "Fecha", "Participantes", "Rondas", "Invitados", "Descripción", "Estado"),  show="headings")
+    estilo.configure("Treeview", rowheight= 25, font=("Impact", 16))
+    tabla = ttk.Treeview(frame, columns=("Nombre", "Fecha", "Participantes", "Rondas", "Invitados", "Descripción", "Estado"),  show="headings", height=15)
     tabla.grid(row=0, column=0, columnspan=6, padx=5, pady=10, sticky="ew")
     tabla.bind("<Button-3>", menu)
 
@@ -335,9 +335,9 @@ def interfazDatos3(ventanaMain):
             else:
                 tag = "UJAP"
 
-            tabla.tag_configure("Oro", background="#DEDE2C", foreground="#FFFFFF", font=("Impact", 16, "italic"))
-            tabla.tag_configure("Plata", background="#545050", foreground="#FFFFFF", font=("Impact", 16, "italic"))
-            tabla.tag_configure("Bronce", background="#8D4416", foreground="#FFFFFF", font=("Impact", 16, "italic"))
+            tabla.tag_configure("Oro", background="#DEDE2C", foreground="#FFFFFF")
+            tabla.tag_configure("Plata", background="#545050", foreground="#FFFFFF")
+            tabla.tag_configure("Bronce", background="#8D4416", foreground="#FFFFFF")
             tabla.tag_configure("Ingeniería", background="#00008B", foreground="#FFFFFF")
             tabla.tag_configure("Sociales", background="#A52A2A", foreground="#FFFFFF")
             tabla.tag_configure("Arquitectura", background="#402169", foreground="#FFFFFF")
@@ -407,8 +407,8 @@ def interfazDatos3(ventanaMain):
 
     estilo = ttk.Style()
     estilo.configure("Treeview.Heading", font=("Impact", 17))
-    estilo.configure("Treeview", rowheight= 35, font=("Impact", 16))
-    tabla = ttk.Treeview(frame, columns=("#", "Nombre y Apellido", "Facultad", "Torneos", "Medallas", "Oro", "Plata", "Bronce", "Otra", "Estado"),  show="headings")
+    estilo.configure("Treeview", rowheight= 25, font=("Impact", 16))
+    tabla = ttk.Treeview(frame, columns=("#", "Nombre y Apellido", "Facultad", "Torneos", "Medallas", "Oro", "Plata", "Bronce", "Otra", "Estado"),  show="headings", height=15)
     tabla.grid(row=0, column=0, columnspan=6, padx=5, pady=10, sticky="ew")
     tabla.bind("<Button-3>", menu)
 
@@ -500,7 +500,6 @@ def interfazDatos4(ventana, funcion, nombreJugador, torneos, medall, o, pla, bro
         ventana.attributes('-disabled', False)
         ventanaDatos4.destroy()
         funcion()
-        
 
     def limpiar():
         spinboxMedallas.delete(0, tk.END)
@@ -509,6 +508,12 @@ def interfazDatos4(ventana, funcion, nombreJugador, torneos, medall, o, pla, bro
         spinboxBronce.delete(0, tk.END)
         spinboxOtra.delete(0, tk.END)
         spinboxMedallas.focus()
+
+    def salirEdicion():
+        respuesta = messagebox.askyesno("Salir", f" Si sale en este momento los datos no serán guardados \n ¿Salir?")
+        if respuesta:
+            ventana.attributes('-disabled', False)
+            ventanaDatos4.destroy()
 
     #Ventana
     ventanaDatos4 = tk.Toplevel(ventana)
@@ -520,11 +525,12 @@ def interfazDatos4(ventana, funcion, nombreJugador, torneos, medall, o, pla, bro
     ventanaDatos4.geometry(f"{anchoVentana}x{altoVentana}+{x}+{y}")
     ventanaDatos4.grab_set()
     ventanaDatos4.focus_force()
+    ventanaDatos4.transient(ventana)
     ventanaDatos4.resizable(False, False)
     ventanaDatos4.configure(bg="lightgray")
-    ventanaDatos4.bind("<Escape>", lambda e:(ventana.attributes('-disabled', False), ventanaDatos4.destroy()))
+    ventanaDatos4.bind("<Escape>", lambda e:salirEdicion())
     ventanaDatos4.bind("<Return>", lambda e: editarMedallas())
-    ventanaDatos4.protocol("WM_DELETE_WINDOW", lambda: (ventanaDatos4.destroy(), sys.exit(0)))
+    ventanaDatos4.protocol("WM_DELETE_WINDOW", salirEdicion)
     ventana.attributes('-disabled', True)
 
     #Widgets
@@ -589,6 +595,7 @@ def interfazDatos5(ventana, nombreTorneo, datosTorneo):
             ventana.attributes('-disabled', False)
             messagebox.showerror("Error", "!!Torneo no encontrado!!")
             return
+        
         if botonCambio.cget("text") == "Despues Torneo":
             tabla.column("Col1", anchor=tk.CENTER, width=200)
             tabla.column("Col2", anchor=tk.CENTER, width=120)
@@ -650,10 +657,10 @@ def interfazDatos5(ventana, nombreTorneo, datosTorneo):
                 else:
                     tag = "UJAP"
 
-                tabla.tag_configure("Oro", background="#DEDE2C", foreground="#FFFFFF", font=("Impact", 16, "italic"))
-                tabla.tag_configure("Plata", background="#545050", foreground="#FFFFFF", font=("Impact", 16, "italic"))
-                tabla.tag_configure("Bronce", background="#8D4416", foreground="#FFFFFF", font=("Impact", 16, "italic"))
-                tabla.tag_configure("Femenina", background="#DE2C50", foreground="#FFFFFF", font=("Impact", 16, "italic"))
+                tabla.tag_configure("Oro", background="#DEDE2C", foreground="#FFFFFF")
+                tabla.tag_configure("Plata", background="#545050", foreground="#FFFFFF")
+                tabla.tag_configure("Bronce", background="#8D4416", foreground="#FFFFFF")
+                tabla.tag_configure("Femenina", background="#DE2C50", foreground="#FFFFFF")
                 tabla.tag_configure("Ingeniería", background="#00008B", foreground="#FFFFFF")
                 tabla.tag_configure("Sociales", background="#A52A2A", foreground="#FFFFFF")
                 tabla.tag_configure("Arquitectura", background="#402169", foreground="#FFFFFF")
@@ -675,6 +682,7 @@ def interfazDatos5(ventana, nombreTorneo, datosTorneo):
                         tabla.insert("", tk.END, values=(posiciones, registro[0], registro[1], registro[2], registro[7], (f"{registro[8]}  {registro[9]}"), registro[3], registro[4], registro[5]), tags=(tag))
                         posiciones += 1
                     elif femenino == True and registro[1] == "F":
+                        tag = "Femenina"
                         tabla.insert("", tk.END, values=(posiciones, registro[0], registro[1], registro[2], registro[7], (f"{registro[8]}  {registro[9]}"), registro[3], registro[4], registro[5]), tags=(tag))
                         posiciones += 1
                         femenino = False
@@ -693,6 +701,19 @@ def interfazDatos5(ventana, nombreTorneo, datosTorneo):
 
     def verDatos():
         messagebox.showinfo("Información Torneo", f" Nombre: {datosTorneo[0]} \n Fecha: {datosTorneo[1]} \n Participantes: {datosTorneo[2]} \n Rondas: {datosTorneo[3]} \n Invitados: {"Si" if datosTorneo[4] == "True" else "No"} \n Descripción: {"Ninguna" if datosTorneo[5] == "" else datosTorneo[5]}")
+    
+    def verEnfrentamientos():
+        datos = bd.consultarEnfrentamientos("AT_"+nombreTorneo)
+
+        if datos == True:
+            messagebox.showerror("Error", " !!Error al consultar datos!! \n Enfrentamientos no encontrados")
+            return
+        
+        enfrentamientos = ""
+        for i in datos:
+            enfrentamientos += f"| {i[0]} | >>>>> {i[1].replace(",", " - ")}\n\n"
+
+        messagebox.showinfo("Enfrentamientos", f"{enfrentamientos}")
 
     #Ventana
     ventanaDatos5 = tk.Toplevel(ventana)
@@ -700,11 +721,12 @@ def interfazDatos5(ventana, nombreTorneo, datosTorneo):
     ventanaDatos5.geometry(f"{ventanaDatos5.winfo_screenwidth()}x{ventanaDatos5.winfo_screenheight()-50}+{-8}+{-2}")
     ventanaDatos5.focus_force()
     ventanaDatos5.grab_set()
+    ventanaDatos5.transient(ventana)
     ventanaDatos5.resizable(False, False)
     ventanaDatos5.configure(bg="lightgray")
     ventanaDatos5.bind("<Escape>", lambda e:(ventana.attributes('-disabled', False), ventanaDatos5.destroy()))
     ventanaDatos5.bind("<Double-Button-1>", lambda e: desseleccionarFila())
-    ventanaDatos5.protocol("WM_DELETE_WINDOW", lambda: (ventanaDatos5.destroy(), sys.exit(0)))
+    ventanaDatos5.protocol("WM_DELETE_WINDOW", lambda: (ventana.attributes('-disabled', False), ventanaDatos5.destroy()))
     ventana.attributes('-disabled', True)
 
     #Widgets
@@ -717,15 +739,18 @@ def interfazDatos5(ventana, nombreTorneo, datosTorneo):
 
     estilo = ttk.Style()
     estilo.configure("Treeview.Heading", font=("Impact", 17))
-    estilo.configure("Treeview", rowheight= 35, font=("Impact", 16))
-    tabla = ttk.Treeview(frame, columns=("Col1", "Col2", "Col3", "Col4", "Col5", "Col6", "Col7", "Col8", "Col9"),  show="headings")
+    estilo.configure("Treeview", rowheight= 25, font=("Impact", 16))
+    tabla = ttk.Treeview(frame, columns=("Col1", "Col2", "Col3", "Col4", "Col5", "Col6", "Col7", "Col8", "Col9"),  show="headings", height=15)
     tabla.grid(row=0, column=0, columnspan=9, padx=5, pady=10, sticky="ew") 
 
+    botonEnfrentamientos = tk.Button(frame, text="  Enfrentamientos  ", bg="lightgray", font=("Impact", 16), command=verEnfrentamientos) 
+    botonEnfrentamientos.grid(row=1, column=0, pady=5, padx=5, sticky="e")
+
     botonVerDatos = tk.Button(frame, text="  Datos  ", bg="lightgray", font=("Impact", 16), command=verDatos)
-    botonVerDatos.grid(row=1, column=0, pady=5, padx=5, sticky="e")
+    botonVerDatos.grid(row=1, column=1, pady=5, padx=5, sticky="e")
 
     botonCambio = tk.Button(frame, text="  Antes Torneo  ", bg="lightgray", font=("Impact", 16), command=lambda:(botonCambio.config(text=f"{"Antes Torneo" if botonCambio.cget("text") == "Despues Torneo" else "Despues Torneo"}"), cargarTabla()))
-    botonCambio.grid(row=1, column=1, pady=5, padx=5, sticky="w")
+    botonCambio.grid(row=1, column=2, pady=5, padx=5, sticky="w")
 
     cargarTabla()
 
@@ -750,7 +775,7 @@ def interfazDatos6(ventana, nombreTorneo, datosTorneo, funcion):
         if vl.validarTexto(entryDescripcion.get()):
             descripcion = entryDescripcion.get()
         else:
-            messagebox.showwarning("Advertencia", "!La descripción no debe exceder los 15 caracteres!")
+            messagebox.showwarning("Advertencia", "!La descripción no debe exceder los 20 caracteres!")
             return
         
         respuesta1 = bd.editarTablaAntesTorneo("AT_"+nombreTorneo, nombre, fecha, datosTorneo[2], datosTorneo[3], datosTorneo[4], descripcion)
@@ -772,6 +797,12 @@ def interfazDatos6(ventana, nombreTorneo, datosTorneo, funcion):
         entryDescripcion.delete(0, tk.END)
         entryNombre.focus()
 
+    def salirEdicion():
+        respuesta = messagebox.askyesno("Salir", f" Si sale en este momento los datos no serán guardados \n ¿Salir?")
+        if respuesta:
+            ventana.attributes('-disabled', False)
+            ventanaDatos6.destroy()        
+
     #Ventana
     ventanaDatos6 = tk.Toplevel(ventana)
     ventanaDatos6.title("ChessPyter")
@@ -782,11 +813,12 @@ def interfazDatos6(ventana, nombreTorneo, datosTorneo, funcion):
     ventanaDatos6.geometry(f"{anchoVentana}x{altoVentana}+{x}+{y}")
     ventanaDatos6.grab_set()
     ventanaDatos6.focus_force()
+    ventanaDatos6.transient(ventana)
     ventanaDatos6.resizable(False, False)
     ventanaDatos6.configure(bg="lightgray")
-    ventanaDatos6.bind("<Escape>", lambda e:(ventana.attributes('-disabled', False), ventanaDatos6.destroy()))
+    ventanaDatos6.bind("<Escape>", lambda e:salirEdicion())
     ventanaDatos6.bind("<Return>", lambda e: editarTorneo())
-    ventanaDatos6.protocol("WM_DELETE_WINDOW", lambda:(ventanaDatos6.destroy(), sys.exit(0)))
+    ventanaDatos6.protocol("WM_DELETE_WINDOW", salirEdicion)
     ventana.attributes('-disabled', True)
 
     #Widgets

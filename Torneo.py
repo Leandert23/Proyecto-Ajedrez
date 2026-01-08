@@ -37,7 +37,7 @@ def interfazTorneo1(ventanaMain):
         if vl.validarTexto(entryDescripcion.get()):
             descripcion = entryDescripcion.get()
         else:
-            messagebox.showwarning("Advertencia", "!La descripción no debe exceder los 15 caracteres!")
+            messagebox.showwarning("Advertencia", "!La descripción no debe exceder los 20 caracteres!")
             return
         
         respuesta = bd.crearTablaAntesTorneo(nombre, fecha, participantes, rondas, invitados, descripcion)
@@ -182,7 +182,7 @@ def interfazTorneo2(ventanaMain, nombreTorneo, datosTorneo):
             else:
                     derrotas = registro[6]
                 
-            tabla.insert("", tk.END, values=(registro[0], registro[1], registro[2], registro[3], victorias , tablas, derrotas, registro[7], (f"{registro[8]}  {registro[9]}"), registro[10]), tags=(tag))
+            tabla.insert("", tk.END, values=(registro[0], registro[1], registro[2], registro[3], victorias , tablas, derrotas, registro[7], (f"{registro[8]}  {registro[9]}"), registro[10], registro[11]), tags=(tag))
                 
         if len(datos) > 10:
             scrollbar = ttk.Scrollbar(frame, orient=tk.VERTICAL, command=tabla.yview)
@@ -198,7 +198,7 @@ def interfazTorneo2(ventanaMain, nombreTorneo, datosTorneo):
     def editarFila():
         fila = tabla.selection()
         datos = tabla.item(fila, 'values')
-        interfazTorneo4(ventanaTorneo2, actualizarTabla, nombreTorneo, datos[0], datos[4], datos[5], datos[6], datos[8], datosTorneo)
+        interfazTorneo4(ventanaTorneo2, actualizarTabla, nombreTorneo, datos[0], datos[3], datos[8], datos[10], datosTorneo)
 
     def borrarFila():
         item = tabla.selection()
@@ -223,16 +223,19 @@ def interfazTorneo2(ventanaMain, nombreTorneo, datosTorneo):
             if valores[4] == "0":
                 victorias = 0
             else:
-                victorias = len((valores[4])[2:-1])
-            
+                victorias = 0
+                for i in valores[4]:
+                    if i == "+" or i == "=" or i == "-":
+                        victorias += 1
+
             datos = valores[0], valores[2]
             estadisticas = valores[0], victorias, valores[9]
             desempates = valores[8].split("  ")
-            desempate = valores[7], desempates[0], desempates[1]
+            desempate = valores[7], desempates[0], desempates[1], valores[10]
             jugadoresInscritos.append(datos)
             estadisticasJugadores.append(estadisticas)
             desempatesJugadores.append(desempate)
-            #Nombre, Genero, Facultad, Elo, Victorias, Tablas, Derrotas, Puntos, Desempates, diferenciaElo
+            #Nombre, Genero, Facultad, Elo, Victorias, Tablas, Derrotas, Puntos, Desempates, diferenciaElo, Enfrentamientos
 
         respuesta = messagebox.askyesno("Cargar Torneo", "¿Estás seguro de cargar el torneo? \n !Una vez cargado no se podrán editar los atributos del torneo!")
         if respuesta:
@@ -248,7 +251,7 @@ def interfazTorneo2(ventanaMain, nombreTorneo, datosTorneo):
             if invitado == False and datosTorneo[4] == "True":
                 messagebox.showerror("Error", "!!Debe haber al menos un invitado en este torneo!!")
                 return
-            
+                
             respuesta = bd.crearTablaDespuesTorneo(datosTorneo[0], datosTorneo[1], datosTorneo[2], datosTorneo[3], datosTorneo[4], datosTorneo[5])  
             i = 0
             for jugadores in jugadoresInscritos:
@@ -258,12 +261,24 @@ def interfazTorneo2(ventanaMain, nombreTorneo, datosTorneo):
                     ventanaTorneo2.destroy()
                     ventanaMain.deiconify()
                     messagebox.showerror("Error", f" !!Error al cargar torneo!! \n Torneo {nombreTorneo} no encontrado")
-                    bd.eliminarTabla("AT_"+nombreTorneo[3:])
-                    bd.eliminarTabla("DT_"+nombreTorneo[3:])
+                    bd.eliminarTorneo(datosTorneo[0], nombreTorneo[3:])
                     return
             
             ventanaTorneo2.destroy()
             interfazTorneo6(ventanaMain, respuesta, datosTorneo, estadisticasJugadores)
+
+    def verEnfrentamientos():
+        datos = bd.consultarEnfrentamientos(nombreTorneo)
+
+        if datos == True:
+            messagebox.showerror("Error", " !!Error al consultar datos!! \n Enfrentamientos no encontrados")
+            return
+        
+        enfrentamientos = ""
+        for i in datos:
+            enfrentamientos += f"| {i[0]} | >>>>> {i[1].replace(",", " - ")}\n\n"
+
+        messagebox.showinfo("Enfrentamientos", f"{enfrentamientos}")
 
     def eliminarTorneo():
         respuesta = messagebox.askyesno("Salir", f" Si sale en este momento el torneo será eliminado \n ¿Guardar Torneo?")
@@ -297,8 +312,8 @@ def interfazTorneo2(ventanaMain, nombreTorneo, datosTorneo):
 
     estilo = ttk.Style()
     estilo.configure("Treeview.Heading", font=("Impact", 17))
-    estilo.configure("Treeview", rowheight= 35, font=("Impact", 16))
-    tabla = ttk.Treeview(frame, columns=("Nombre y Apellido", "Género", "Facultad", "Elo", "Victorias", "Tablas", "Derrotas", "Puntos", "Desempates", "Diferencia Elo"),  show="headings")
+    estilo.configure("Treeview", rowheight= 25, font=("Impact", 16))
+    tabla = ttk.Treeview(frame, columns=("Nombre y Apellido", "Género", "Facultad", "Elo", "Victorias", "Tablas", "Derrotas", "Puntos", "Desempates", "Diferencia Elo", "Enfrentamientos"),  show="headings", height=15)
     tabla.grid(row=0, column=0, columnspan=9, padx=5, pady=10, sticky="ew") 
     tabla.bind("<Button-3>", menu)
 
@@ -312,6 +327,7 @@ def interfazTorneo2(ventanaMain, nombreTorneo, datosTorneo):
     tabla.column("Puntos", anchor=tk.CENTER, width=110)
     tabla.column("Desempates", anchor=tk.CENTER, width=160)
     tabla.column("Diferencia Elo", anchor=tk.CENTER, width=0, stretch=False, minwidth=0)
+    tabla.column("Enfrentamientos", anchor=tk.CENTER, width=0, stretch=False, minwidth=0)
     
     tabla.heading("Nombre y Apellido", text="Nombre y Apellido")
     tabla.heading("Género", text="Género")
@@ -336,14 +352,17 @@ def interfazTorneo2(ventanaMain, nombreTorneo, datosTorneo):
     labelInvitados = tk.Label(frame, text=f"  Invitados: {"Si" if datosTorneo[4] == "True" else "No"}  ", bg="lightgray", font=("Impact", 16))
     labelInvitados.grid(row=1, column=2, pady=5, sticky="w")
 
+    botonEnfrentamientos = tk.Button(frame, text="  Enfrentamientos  ", bg="lightgray", font=("Impact", 14), command=verEnfrentamientos) 
+    botonEnfrentamientos.grid(row=1, column=4, pady=5, padx=5, sticky="e")
+
     botonAgregarJugador = tk.Button(frame, text="  Agregar  ", font=("Impact", 14), bg="lightgray", command=lambda:(interfazTorneo3(ventanaTorneo2, nombreTorneo, actualizarTabla)))
-    botonAgregarJugador.grid(row=1, column=4, pady=5, padx=5, sticky="e")
+    botonAgregarJugador.grid(row=1, column=5, pady=5, padx=5, sticky="e")
 
     botonEditarTorneo = tk.Button(frame, text="  Editar  ", font=("Impact", 14), bg="lightgray", command= lambda:(interfazTorneo5(ventanaMain, ventanaTorneo2, nombreTorneo, datosTorneo)))
-    botonEditarTorneo.grid(row=1, column=5, pady=5, padx=5, sticky="ew")
+    botonEditarTorneo.grid(row=1, column=6, pady=5, padx=5, sticky="ew")
 
     botonCargarTorneo = tk.Button(frame, text="  Cargar  ", font=("Impact", 14), bg="lightgray", command= cargarTorneo)
-    botonCargarTorneo.grid(row=1, column=6, pady=5, padx=5, sticky="w")
+    botonCargarTorneo.grid(row=1, column=7, pady=5, padx=5, sticky="w")
 
     actualizarTabla()
 
@@ -351,7 +370,7 @@ def interfazTorneo3(ventana, nombreTorneo, funcion):
     #Funciones
     def filtrarJugadores():
         datos = bd.consultarDatosJugadores("Nombre")
-        
+
         if datos == True:
             ventana.attributes('-disabled', False)
             messagebox.showerror("Error", " !!Error al consultar!! \n Jugadores no encontrados")
@@ -388,13 +407,6 @@ def interfazTorneo3(ventana, nombreTorneo, funcion):
         ventanaTorneo3.destroy()
         funcion()
 
-    def eliminarTorneo():
-        respuesta = messagebox.askyesno("Salir", f" Si sale en este momento el torneo será eliminado \n ¿Seguro de salir?")
-        if respuesta:
-            ventanaTorneo3.destroy()
-            bd.eliminarTabla(nombreTorneo)
-            sys.exit(0)
-
     #Ventana
     ventanaTorneo3 = tk.Toplevel(ventana)
     ventanaTorneo3.title("ChessPyter")
@@ -405,10 +417,11 @@ def interfazTorneo3(ventana, nombreTorneo, funcion):
     ventanaTorneo3.geometry(f"{anchoVentana}x{altoVentana}+{x}+{y}")
     ventanaTorneo3.focus_force()
     ventanaTorneo3.grab_set()
+    ventanaTorneo3.transient(ventana)
     ventanaTorneo3.resizable(False, False)
     ventanaTorneo3.configure(bg="lightgray")
     ventanaTorneo3.bind("<Escape>", lambda e:(ventana.attributes('-disabled', False), ventanaTorneo3.destroy()))
-    ventanaTorneo3.protocol("WM_DELETE_WINDOW", eliminarTorneo)
+    ventanaTorneo3.protocol("WM_DELETE_WINDOW", lambda: (ventana.attributes('-disabled', False), ventanaTorneo3.destroy()))
     ventana.attributes('-disabled', True)
 
     #Widgets
@@ -429,47 +442,83 @@ def interfazTorneo3(ventana, nombreTorneo, funcion):
 
     filtrarJugadores()
 
-def interfazTorneo4(ventana, funcion, nombreTorneo, nombreJugador, vict, tabl, derro, desemp, datosTorneo):
+def interfazTorneo4(ventana, funcion, nombreTorneo, nombreJugador, elo, desemp, enfre, datosTorneo):
     #Funciones
     def insertarDatos():
-        spinboxVictorias.delete(0, tk.END)
-        spinboxTablas.delete(0, tk.END)
-        spinboxDerrotas.delete(0, tk.END)
         spinboxDesempate1.delete(0, tk.END)
         spinboxDesempate2.delete(0, tk.END)
         desempates = desemp.split("  ")
-        spinboxVictorias.insert(0,f"{vict[2:-1] if vict != "0" else "0"}")
-        spinboxTablas.insert(0, f"{tabl[2:-1] if tabl != "0" else "0"}")
-        spinboxDerrotas.insert(0, f"{derro[2:-1] if derro != "0" else "0"}")
         spinboxDesempate1.insert(0, desempates[0])
         spinboxDesempate2.insert(0, desempates[1])
+        listaEnfrentamientos = enfre.split(",")
+        for jugador in listaEnfrentamientos:
+            if jugador[-3] == "V" or jugador == "Bye(B)" or jugador == "Forfeit(+F)":
+                listaVictorias.append(jugador)
+                comboboxVictorias.config(values=listaVictorias)
+                if len(listaVictorias)-1 > 0:
+                    estadisticas = ""
+                    for jugador in listaVictorias:
+                        if jugador == "Agregar Jugador":
+                            continue
+                        else:
+                            estadisticas += jugador[-2]
+                    comboboxVictorias.set(f"{len(listaVictorias)-1}({estadisticas})")
+                else:
+                    comboboxVictorias.set(len(listaVictorias)-1)
+            elif jugador[-3] == "T":
+                listaTablas.append(jugador)
+                comboboxTablas.config(values=listaTablas)
+                if len(listaTablas)-1 > 0:
+                    estadisticas = ""
+                    for jugador in listaTablas:
+                        if jugador == "Agregar Jugador":
+                            continue
+                        else:
+                            estadisticas += jugador[-2]
+                    comboboxTablas.set(f"{len(listaTablas)-1}({estadisticas})")
+                else:
+                    comboboxTablas.set(len(listaTablas)-1)
+            elif jugador[-3] == "D"or jugador == "Forfeit(-F)":
+                listaDerrotas.append(jugador)
+                comboboxDerrotas.config(values=listaDerrotas)
+                if len(listaDerrotas)-1 > 0:
+                    estadisticas = ""
+                    for jugador in listaDerrotas:
+                        if jugador == "Agregar Jugador":
+                            continue
+                        else:
+                            estadisticas += jugador[-2]
+                    comboboxDerrotas.set(f"{len(listaDerrotas)-1}({estadisticas})")
+                else:
+                    comboboxDerrotas.set(len(listaDerrotas)-1)
+        
 
     def editarJugador():
-        eloVictorias = vl.validarEloVictorias(spinboxVictorias.get())
-        numeroVictorias = len(spinboxVictorias.get())
+        eloVictorias = vl.validarEloVictorias(comboboxVictorias.get()[2:-1])
+        numeroVictorias = len(comboboxVictorias.get()[2:-1])
         if eloVictorias == "False":
             messagebox.showwarning("Advertencia", f" !Símbolo incorrecto (Victorias)! \n Permitidos ( + - = )")
             return
         
-        if spinboxVictorias.get() == "0":
+        if comboboxVictorias.get()[2:-1] == "0":
             numeroVictorias = 0
         
-        eloTablas = vl.validarEloTablas(spinboxTablas.get())
-        numeroTablas = len(spinboxTablas.get())
+        eloTablas = vl.validarEloTablas(comboboxTablas.get()[2:-1])
+        numeroTablas = len(comboboxTablas.get()[2:-1])
         if eloTablas == "False":
-            messagebox.showwarning("Advertencia", f" !Símbolo incorrecto (Tablas)! \n Permitidos ( + - )")
+            messagebox.showwarning("Advertencia", f" !Símbolo incorrecto (Tablas)! \n Permitidos ( + - = )")
             return
         
-        if spinboxTablas.get() == "0":
+        if comboboxTablas.get()[2:-1] == "0":
             numeroTablas = 0
         
-        eloDerrotas = vl.validarEloDerrotas(spinboxDerrotas.get())
-        numeroDerrotas = len(spinboxDerrotas.get())
+        eloDerrotas = vl.validarEloDerrotas(comboboxDerrotas.get()[2:-1])
+        numeroDerrotas = len(comboboxDerrotas.get()[2:-1])
         if eloDerrotas == "False":
             messagebox.showwarning("Advertencia", f" !Símbolo incorrecto (Derrotas)! \n Permitidos ( + - = )")
             return
         
-        if spinboxDerrotas.get() == "0":
+        if comboboxDerrotas.get()[2:-1] == "0":
             numeroDerrotas = 0
         
         if vl.validarFloat(spinboxDesempate1.get()):
@@ -493,31 +542,80 @@ def interfazTorneo4(ventana, funcion, nombreTorneo, nombreJugador, vict, tabl, d
         if numeroVictorias == 0:
             victorias = "0"
         else:
-            victorias = f"{numeroVictorias}({spinboxVictorias.get()})"
+            victorias = f"{numeroVictorias}({comboboxVictorias.get()[2:-1]})"
 
         if numeroTablas == 0:
             tablas = "0"
         else:
-            tablas = f"{numeroTablas}({spinboxTablas.get()})"
+            tablas = f"{numeroTablas}({comboboxTablas.get()[2:-1]})"
         
         if numeroDerrotas == 0:
             derrotas= "0"
         else:
-            derrotas = f"{numeroDerrotas}({spinboxDerrotas.get()})"
+            derrotas = f"{numeroDerrotas}({comboboxDerrotas.get()[2:-1]})"
+        
+        listaVictorias.remove("Agregar Jugador") 
+        listaTablas.remove("Agregar Jugador")  
+        listaDerrotas.remove("Agregar Jugador")
+        enfrentamientos = listaVictorias + listaTablas + listaDerrotas
+        listaEnfrentamientos = ",".join(enfrentamientos)
 
         puntos = int(numeroVictorias) + int(numeroTablas)/2
-        bd.actualizarJugadorTorneo(nombreTorneo, nombreJugador, victorias, tablas, derrotas, puntos, round(float(desempate1),2), round(float(desempate2),2), diferenciaElo)
+        bd.actualizarJugadorTorneo(nombreTorneo, nombreJugador, victorias, tablas, derrotas, puntos, round(float(desempate1),2), round(float(desempate2),2), diferenciaElo, listaEnfrentamientos)
         ventana.attributes('-disabled', False)
         ventanaTorneo4.destroy()
-        funcion()
+        funcion()    
+
+    def agregarJugador(combobox, lista, jugador):
+        if jugador != "Bye(B)" and jugador != "Forfeit(-F)" and jugador != "Forfeit(+F)":
+            if jugador in lista:
+                messagebox.showwarning("Advertencia", f" !Jugador ya agregado! \n Ingrese uno nuevo")
+                return
+        lista.append(jugador)
+        combobox.config(values=lista)
+        if len(lista)-1 > 0:
+            estadisticas = ""
+            for jugador in lista:
+                if jugador == "Agregar Jugador":
+                    continue
+                else:
+                    estadisticas += jugador[-2]
+            combobox.set(f"{len(lista)-1}({estadisticas})")
+        else:
+            combobox.set(len(lista)-1)
+    
+    def seleccionarOpcion(combobox, lista, jugador, tipo):
+        if jugador == "Agregar Jugador":
+            interfazTorneo7(ventanaTorneo4, nombreTorneo, nombreJugador, elo, combobox, lista, tipo, agregarJugador)
+        else:
+            lista.remove(jugador)
+        combobox.config(values=lista)
+        if len(lista)-1 > 0:
+            estadisticas = ""
+            for jugador in lista:
+                if jugador == "Agregar Jugador":
+                    continue
+                else:
+                    estadisticas += jugador[-2]
+            combobox.set(f"{len(lista)-1}({estadisticas})")
+        else:
+            combobox.set(len(lista)-1) 
 
     def limpiar():
-        spinboxVictorias.delete(0, tk.END)
-        spinboxTablas.delete(0, tk.END)
-        spinboxDerrotas.delete(0, tk.END)
+        comboboxVictorias.config(values=["AgregarJugador"])
+        comboboxTablas.config(values=["AgregarJugador"])
+        comboboxDerrotas.config(values=["AgregarJugador"])
+        comboboxVictorias.set("0")
+        comboboxTablas.set("0")
+        comboboxDerrotas.set("0")
         spinboxDesempate1.delete(0, tk.END)
         spinboxDesempate2.delete(0, tk.END) 
-        spinboxVictorias.focus()
+
+    def salirEdicion():
+        respuesta = messagebox.askyesno("Salir", f" Si sale en este momento los datos no serán guardados \n ¿Salir?")
+        if respuesta:
+            ventana.attributes('-disabled', False)
+            ventanaTorneo4.destroy()
 
     #Ventana
     ventanaTorneo4 = tk.Toplevel(ventana)
@@ -530,14 +628,15 @@ def interfazTorneo4(ventana, funcion, nombreTorneo, nombreJugador, vict, tabl, d
     ventanaTorneo4.resizable(False, False)
     ventanaTorneo4.focus_force()
     ventanaTorneo4.grab_set()
+    ventanaTorneo4.transient(ventana)
     ventanaTorneo4.configure(bg="lightgray")
-    ventanaTorneo4.bind("<Escape>", lambda e:(ventana.attributes('-disabled', False), ventanaTorneo4.destroy()))
+    ventanaTorneo4.bind("<Escape>", lambda e:salirEdicion())
     ventanaTorneo4.bind("<Return>", lambda e: editarJugador())
-    ventanaTorneo4.protocol("WM_DELETE_WINDOW", lambda: (ventanaTorneo4.destroy(), sys.exit(0)))
+    ventanaTorneo4.protocol("WM_DELETE_WINDOW", salirEdicion)
     ventana.attributes('-disabled', True)
 
     #Widgets
-    labelTitulo = tk.Label(ventanaTorneo4, text="  Editar Jugador  ", font=("Impact", 20))
+    labelTitulo = tk.Label(ventanaTorneo4, text=f"  {nombreJugador} {elo}  ", font=("Impact", 20))
     labelTitulo.pack(pady= (20,10))
 
     frame = tk.Frame(ventanaTorneo4, bd=10, bg="gray", width=500, height=500)
@@ -560,15 +659,23 @@ def interfazTorneo4(ventana, funcion, nombreTorneo, nombreJugador, vict, tabl, d
     labelDesempate2 = tk.Label(frame, text="  Desempate2  ", font=("Impact", 17))
     labelDesempate2.grid(row=4, column=0, padx=10, pady=10, sticky="ew")
 
-    spinboxVictorias = tk.Spinbox(frame, from_=0, to=99, font=("Impact", 16))
-    spinboxVictorias.grid(row=0, column=1, padx=10, pady=10, sticky="ew")
-    ventanaTorneo4.after(10, lambda:spinboxVictorias.focus())
+    listaVictorias = ["Agregar Jugador"]
+    comboboxVictorias = ttk.Combobox(frame, values=listaVictorias, font=("Impact", 16), state="readonly")
+    comboboxVictorias.grid(row=0, column=1, padx=10, pady=8, sticky="ew")
+    comboboxVictorias.set("0")
+    comboboxVictorias.bind("<<ComboboxSelected>>", lambda e: seleccionarOpcion(comboboxVictorias, listaVictorias, comboboxVictorias.get(), "Victorias"))
 
-    spinboxTablas = tk.Spinbox(frame, from_=0, to=99, font=("Impact", 16))
-    spinboxTablas.grid(row=1, column=1, padx=10, pady=10, sticky="ew")
-
-    spinboxDerrotas = tk.Spinbox(frame, from_=0, to=99, font=("Impact", 16))
-    spinboxDerrotas.grid(row=2, column=1, padx=10, pady=10, sticky="ew")
+    listaTablas = ["Agregar Jugador"]
+    comboboxTablas = ttk.Combobox(frame, values=listaTablas, font=("Impact", 16), state="readonly")
+    comboboxTablas.grid(row=1, column=1, padx=10, pady=8, sticky="ew")
+    comboboxTablas.set("0")
+    comboboxTablas.bind("<<ComboboxSelected>>", lambda e: seleccionarOpcion(comboboxTablas, listaTablas, comboboxTablas.get(), "Tablas"))
+    
+    listaDerrotas = ["Agregar Jugador"]
+    comboboxDerrotas = ttk.Combobox(frame, values=listaDerrotas, font=("Impact", 16), state="readonly")
+    comboboxDerrotas.grid(row=2, column=1, padx=10, pady=8, sticky="ew")
+    comboboxDerrotas.set("0")
+    comboboxDerrotas.bind("<<ComboboxSelected>>", lambda e: seleccionarOpcion(comboboxDerrotas, listaDerrotas, comboboxDerrotas.get(), "Derrotas"))
 
     spinboxDesempate1 = tk.Spinbox(frame, from_=0.00, to=99.00, increment=0.5, format="%.2f", font=("Impact", 16))
     spinboxDesempate1.grid(row=3, column=1, padx=10, pady=10, sticky="ew")
@@ -627,7 +734,7 @@ def interfazTorneo5(ventanaMain, ventana, nombreTorneo, datosTorneo):
         if vl.validarTexto(entryDescripcion.get()):
             descripcion = entryDescripcion.get()
         else:
-            messagebox.showwarning("Advertencia", "!La descripción no debe exceder los 15 caracteres!")
+            messagebox.showwarning("Advertencia", "!La descripción no debe exceder los 20 caracteres!")
             return
         
         respuesta = bd.editarTablaAntesTorneo(nombreTorneo, nombre, fecha, participantes, rondas, invitados, descripcion)
@@ -637,16 +744,10 @@ def interfazTorneo5(ventanaMain, ventana, nombreTorneo, datosTorneo):
         
         ventana.attributes('-disabled', False)
         ventana.destroy()
-        datosTorneo = (nombre, fecha, participantes, rondas, invitados, descripcion)
+        bd.editarTablaListaTorneo(datosTorneo[0], nombre, fecha, descripcion, participantes, rondas, invitados)
+        datosTorneo2 = (nombre, fecha, participantes, rondas, invitados, descripcion)
         ventanaTorneo5.destroy()
-        interfazTorneo2(ventanaMain, respuesta, datosTorneo)
-
-    def eliminarTorneo():
-        respuesta = messagebox.askyesno("Salir", f" Si sale en este momento el torneo será eliminado \n ¿Seguro de salir?")
-        if respuesta:
-            ventanaTorneo5.destroy()
-            bd.eliminarTabla(nombreTorneo)
-            sys.exit(0)
+        interfazTorneo2(ventanaMain, respuesta, datosTorneo2)
 
     def limpiar():
         entryNombre.delete(0, tk.END)
@@ -659,6 +760,12 @@ def interfazTorneo5(ventanaMain, ventana, nombreTorneo, datosTorneo):
         entryDescripcion.delete(0, tk.END)
         entryNombre.focus()
 
+    def salirEdicion():
+        respuesta = messagebox.askyesno("Salir", f" Si sale en este momento los datos no serán guardados \n ¿Salir?")
+        if respuesta:
+            ventana.attributes('-disabled', False)
+            ventanaTorneo5.destroy()
+
     #Ventana
     ventanaTorneo5 = tk.Toplevel(ventanaMain)
     ventanaTorneo5.title("ChessPyter")
@@ -669,10 +776,11 @@ def interfazTorneo5(ventanaMain, ventana, nombreTorneo, datosTorneo):
     ventanaTorneo5.geometry(f"{anchoVentana}x{altoVentana}+{x}+{y}")
     ventanaTorneo5.grab_set()
     ventanaTorneo5.focus_force()
+    ventanaTorneo5.transient(ventana)
     ventanaTorneo5.resizable(False, False)
     ventanaTorneo5.configure(bg="lightgray")
-    ventanaTorneo5.bind("<Escape>", lambda e:(ventana.attributes('-disabled', False), ventanaTorneo5.destroy()))
-    ventanaTorneo5.protocol("WM_DELETE_WINDOW", eliminarTorneo)
+    ventanaTorneo5.bind("<Escape>", lambda e: salirEdicion())
+    ventanaTorneo5.protocol("WM_DELETE_WINDOW", salirEdicion)
     ventanaTorneo5.bind("<Return>", lambda e: editarTorneo())
     ventana.attributes('-disabled', True)
 
@@ -743,9 +851,7 @@ def interfazTorneo6(ventanaMain, nombreTorneo, datosTorneo, estadisticasJugadore
             ventanaTorneo6.destroy()
             ventanaMain.deiconify()
             messagebox.showerror("Error", f" !!Error al cargar torneo!! \n Torneo {nombreTorneo} no encontrado!!")
-            print("AT_"+nombreTorneo[3:])
-            bd.eliminarTabla("AT_"+nombreTorneo[3:])
-            bd.eliminarTabla("DT_"+nombreTorneo[3:])
+            bd.eliminarTorneo(datosTorneo[0], nombreTorneo[3:])
             return
         
         posiciones = 0
@@ -766,10 +872,10 @@ def interfazTorneo6(ventanaMain, nombreTorneo, datosTorneo, estadisticasJugadore
                 tag = "Invitado"
             else:
                 tag = "UJAP"
-            tabla.tag_configure("Oro", background="#DEDE2C", foreground="#FFFFFF", font=("Impact", 16, "italic"))
-            tabla.tag_configure("Plata", background="#545050", foreground="#FFFFFF", font=("Impact", 16, "italic"))
-            tabla.tag_configure("Bronce", background="#8D4416", foreground="#FFFFFF", font=("Impact", 16, "italic"))
-            tabla.tag_configure("Femenina", background="#DE2C50", foreground="#FFFFFF", font=("Impact", 16, "italic"))
+            tabla.tag_configure("Oro", background="#DEDE2C", foreground="#FFFFFF")
+            tabla.tag_configure("Plata", background="#545050", foreground="#FFFFFF")
+            tabla.tag_configure("Bronce", background="#8D4416", foreground="#FFFFFF")
+            tabla.tag_configure("Femenina", background="#DE2C50", foreground="#FFFFFF")
             tabla.tag_configure("Ingeniería", background="#00008B", foreground="#FFFFFF")
             tabla.tag_configure("Sociales", background="#A52A2A", foreground="#FFFFFF")
             tabla.tag_configure("Arquitectura", background="#402169", foreground="#FFFFFF")
@@ -831,6 +937,19 @@ def interfazTorneo6(ventanaMain, nombreTorneo, datosTorneo, estadisticasJugadore
     def verDatos():
         messagebox.showinfo("Información Torneo", f" Nombre: {datosTorneo[0]} \n Fecha: {datosTorneo[1]} \n Participantes: {datosTorneo[2]} \n Rondas: {datosTorneo[3]} \n Invitados: {"Si" if datosTorneo[4] == "True" else "No"} \n Descripción: {"Ninguna" if datosTorneo[5] == "" else datosTorneo[5]}")
 
+    def verEnfrentamientos():
+        datos = bd.consultarEnfrentamientos(nombreTorneo)
+
+        if datos == True:
+            messagebox.showerror("Error", " !!Error al consultar datos!! \n Enfrentamientos no encontrados")
+            return
+        
+        enfrentamientos = ""
+        for i in datos:
+            enfrentamientos += f"| {i[0]} | >>>>> {i[1].replace(",", " - ")}\n\n"
+
+        messagebox.showinfo("Enfrentamientos", f"{enfrentamientos}")
+
     ventanaTorneo6 = tk.Toplevel(ventanaMain)
     ventanaTorneo6.title("ChessPyter")
     ventanaTorneo6.geometry(f"{ventanaTorneo6.winfo_screenwidth()}x{ventanaTorneo6.winfo_screenheight()-50}+{-8}+{-2}")
@@ -851,8 +970,8 @@ def interfazTorneo6(ventanaMain, nombreTorneo, datosTorneo, estadisticasJugadore
 
     estilo = ttk.Style()
     estilo.configure("Treeview.Heading", font=("Impact", 17))
-    estilo.configure("Treeview", rowheight= 35, font=("Impact", 16))
-    tabla = ttk.Treeview(frame, columns=("#", "Nombre y Apellido", "Género", "Facultad", "Puntos", "Desempates", "Elo(+/-)", "Victorias(+)", "Medallas(+)"),show="headings")
+    estilo.configure("Treeview", rowheight= 25, font=("Impact", 16))
+    tabla = ttk.Treeview(frame, columns=("#", "Nombre y Apellido", "Género", "Facultad", "Puntos", "Desempates", "Elo(+/-)", "Victorias(+)", "Medallas(+)"),show="headings", height=15)
     tabla.grid(row=0, column=0, columnspan=9, padx=5, pady=10, sticky="ew")
 
     tabla.column("#", anchor=tk.CENTER, width=60)
@@ -875,13 +994,114 @@ def interfazTorneo6(ventanaMain, nombreTorneo, datosTorneo, estadisticasJugadore
     tabla.heading("Victorias(+)", text="Victorias(+)")
     tabla.heading("Medallas(+)", text="Medallas(+)")
 
-    botonVerDatos = tk.Button(frame, text="  Datos  ", font=("Impact", 16), command=verDatos)
-    botonVerDatos.grid(row=1, column=0, pady=5, padx=5, sticky="e")
+    botonEnfrentamientos = tk.Button(frame, text="  Enfrentamientos  ", bg="lightgray", font=("Impact", 16), command=verEnfrentamientos) 
+    botonEnfrentamientos.grid(row=1, column=0, pady=5, padx=5, sticky="e")
 
-    botonTerminarTorneo = tk.Button(frame, text="  Terminar  ", font=("Impact", 16), command=lambda:(ventanaTorneo6.destroy(), ventanaMain.deiconify()))
-    botonTerminarTorneo.grid(row=1, column=1, pady=5, padx=5, sticky="w")
+    botonVerDatos = tk.Button(frame, text="  Datos  ", bg="lightgray", font=("Impact", 16), command=verDatos)
+    botonVerDatos.grid(row=1, column=1, pady=5, padx=5, sticky="e")
+
+    botonTerminarTorneo = tk.Button(frame, text="  Terminar  ", bg="lightgray", font=("Impact", 16), command=lambda:(ventanaTorneo6.destroy(), ventanaMain.deiconify()))
+    botonTerminarTorneo.grid(row=1, column=2, pady=5, padx=5, sticky="w")
 
     actualizarTabla()
+
+def interfazTorneo7(ventana, nombreTorneo, nombreJugador, elo, combobox, lista, tipo, funcion):
+    #Funciones
+    def filtrarJugadores():
+        datos = bd.consultarDatosAntesTorneo(nombreTorneo)
+
+        if datos == True:
+            ventana.attributes('-disabled', False)
+            messagebox.showerror("Error", " !!Error al consultar!! \n Jugadores no encontrados")
+            return
+        
+        listaJugadoresFiltrados = []
+        if tipo == "Victorias" or tipo == "Derrotas":
+            listaJugadoresFiltrados.append("Bye")
+            listaJugadoresFiltrados.append("Forfeit")
+
+        nombreCompletos = []
+        for registro in datos:
+            if registro[0] == nombreJugador:
+                continue
+            nombreCompletos.append(registro[0])
+        for nombre in nombreCompletos:
+            if entryBusqueda.get().lower() in nombre.lower():
+                listaJugadoresFiltrados.append(nombre)
+        listaJugadores.delete(0, tk.END)
+        for jugador in listaJugadoresFiltrados:
+            listaJugadores.insert(tk.END, jugador)
+
+        if len(datos) > 10:
+            scrollbar = ttk.Scrollbar(frame, orient=tk.VERTICAL, command=listaJugadores.yview)
+            listaJugadores.configure(yscroll=scrollbar.set)
+            scrollbar.grid(row=0, column=1, sticky="ns")
+    
+    def seleccionarJugador():
+        indice = listaJugadores.curselection()
+        nombreJugador = listaJugadores.get(indice)
+        diferencia = 0
+
+        if nombreJugador == "Bye":
+            respuesta = "Bye"
+        elif nombreJugador == "Forfeit":
+            respuesta = "Forfeit"
+        else:
+            respuesta = bd.consultarDatosJugadores(nombreJugador)
+            diferencia = int(elo) - int(respuesta[0][3])
+
+        if respuesta == True:
+            messagebox.showerror("Error", " !!Este jugador ya está inscrito!! \n Por favor ingrese uno diferente")
+            return
+        elif respuesta == False:
+            messagebox.showerror("Error", " !!Error al agregar Jugador!! \n Tabla jugadores no encontrada")
+            return
+
+        if tipo == "Victorias":
+            jugador = vl.validarDiferenciaVictorias(diferencia, respuesta)
+        elif tipo == "Tablas":
+            jugador = vl.validarDiferenciaTablas(diferencia, respuesta)
+        else:
+            jugador = vl.validarDiferenciaDerrotas(diferencia, respuesta)
+            
+        ventana.attributes('-disabled', False)
+        ventanaTorneo7.destroy()
+        funcion(combobox, lista, jugador)
+
+    #Ventana
+    ventanaTorneo7 = tk.Toplevel(ventana)
+    ventanaTorneo7.title("ChessPyter")
+    anchoVentana = 325
+    altoVentana = 475
+    x = (ventanaTorneo7.winfo_screenwidth() - anchoVentana)//2
+    y = (ventanaTorneo7.winfo_screenheight() - altoVentana)//2
+    ventanaTorneo7.geometry(f"{anchoVentana}x{altoVentana}+{x}+{y}")
+    ventanaTorneo7.focus_force()
+    ventanaTorneo7.grab_set()
+    ventanaTorneo7.transient(ventana)
+    ventanaTorneo7.resizable(False, False)
+    ventanaTorneo7.configure(bg="lightgray")
+    ventanaTorneo7.bind("<Escape>", lambda e:(ventana.attributes('-disabled', False), ventanaTorneo7.destroy()))
+    ventanaTorneo7.protocol("WM_DELETE_WINDOW", lambda:(ventana.attributes('-disabled', False), ventanaTorneo7.destroy()))
+    ventana.attributes('-disabled', True)
+
+    #Widgets
+    labelTitulo = tk.Label(ventanaTorneo7, text=f"  Agregar Jugador  ", font=("Impact", 20))
+    labelTitulo.pack(pady=(20, 10)) 
+
+    frame = tk.Frame(ventanaTorneo7, bd=10, bg="gray", width=500, height=500)
+    frame.pack()  
+        
+    listaJugadores = tk.Listbox(frame, width=20, height=10, font=("Impact", 17))
+    listaJugadores.grid(row=0, column=0, sticky="ew")
+    listaJugadores.bind("<Double-Button-1>", lambda e:seleccionarJugador())
+
+    entryBusqueda = tk.Entry(frame, font=("Impact", 16))
+    entryBusqueda.grid(row=1, column=0, columnspan=2, pady=10, sticky="ew")
+    ventanaTorneo7.after(100, lambda:entryBusqueda.focus())
+    entryBusqueda.bind("<KeyRelease>", lambda e:filtrarJugadores())
+
+    filtrarJugadores()
 
 def editarTorneo():
     pass

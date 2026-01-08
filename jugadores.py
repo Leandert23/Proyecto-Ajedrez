@@ -7,6 +7,9 @@ import sys
 def interfazJugadores1(ventanaMain):
     #Funciones
     def cargarJugadores(filtro="Nombre"):
+        if filtro in ["Nombre", "Genero", "Facultad", "Elo", "Victorias", "Torneos", "Medallas"]:
+            entryBusqueda.delete(0, tk.END)
+
         for fila in tabla.get_children():
             tabla.delete(fila)
 
@@ -98,8 +101,8 @@ def interfazJugadores1(ventanaMain):
 
     estilo = ttk.Style()
     estilo.configure("Treeview.Heading", font=("Impact", 17))
-    estilo.configure("Treeview", rowheight= 35, font=("Impact", 16))
-    tabla = ttk.Treeview(frame, columns=("Nombre y Apellido","Género", "Facultad", "Elo", "Victorias", "Torneos", "Medallas"), show="headings")
+    estilo.configure("Treeview", rowheight= 25, font=("Impact", 16))
+    tabla = ttk.Treeview(frame, columns=("Nombre y Apellido","Género", "Facultad", "Elo", "Victorias", "Torneos", "Medallas"), show="headings", height=15)
     tabla.grid(row=0, column=0, columnspan=6, padx=5, pady=10, sticky="ew")
     tabla.bind("<Button-3>", menu)
 
@@ -233,6 +236,12 @@ def interfazJugadores2(ventana, funcion):
         spinboxMedallas.delete(0, tk.END) 
         entryNombreCompleto.focus()
 
+    def salirEdicion():
+        respuesta = messagebox.askyesno("Salir", f" Si sale en este momento los datos no serán guardados \n ¿Salir?")
+        if respuesta:
+            ventana.attributes('-disabled', False)
+            ventanaJugadores2.destroy()
+
     #Ventana
     ventanaJugadores2 = tk.Toplevel(ventana)
     ventanaJugadores2.title("ChessPyter")
@@ -244,10 +253,11 @@ def interfazJugadores2(ventana, funcion):
     ventanaJugadores2.resizable(False, False)
     ventanaJugadores2.focus_force()
     ventanaJugadores2.grab_set()
+    ventanaJugadores2.transient(ventana)
     ventanaJugadores2.configure(bg="lightgray")
-    ventanaJugadores2.bind("<Escape>", lambda e:(ventana.attributes('-disabled', False), ventanaJugadores2.destroy()))
+    ventanaJugadores2.bind("<Escape>", lambda e:salirEdicion())
     ventanaJugadores2.bind("<Return>", lambda e: crearJugador())
-    ventanaJugadores2.protocol("WM_DELETE_WINDOW", lambda: (ventanaJugadores2.destroy(), sys.exit(0)))
+    ventanaJugadores2.protocol("WM_DELETE_WINDOW", salirEdicion)
     ventana.attributes('-disabled', True)
 
     #Widgets
@@ -401,6 +411,12 @@ def interfazJugadores3(ventana, funcion, nombreJugador, gen, fac, el, vict, torn
         spinboxMedallas.delete(0, tk.END) 
         entryNombreCompleto.focus()
 
+    def salirEdicion():
+        respuesta = messagebox.askyesno("Salir", f" Si sale en este momento los datos no serán guardados \n ¿Salir?")
+        if respuesta:
+            ventana.attributes('-disabled', False)
+            ventanaJugadores3.destroy()
+
     #Ventana
     ventanaJugadores3 = tk.Toplevel(ventana)
     ventanaJugadores3.title("ChessPyter")
@@ -412,10 +428,11 @@ def interfazJugadores3(ventana, funcion, nombreJugador, gen, fac, el, vict, torn
     ventanaJugadores3.resizable(False, False)
     ventanaJugadores3.focus_force()
     ventanaJugadores3.grab_set()
+    ventanaJugadores3.transient(ventana)
     ventanaJugadores3.configure(bg="lightgray")
-    ventanaJugadores3.bind("<Escape>", lambda e:(ventana.attributes('-disabled', False), ventanaJugadores3.destroy()))
+    ventanaJugadores3.bind("<Escape>", lambda e:salirEdicion())
     ventanaJugadores3.bind("<Return>", lambda e: editarJugador())
-    ventanaJugadores3.protocol("WM_DELETE_WINDOW", lambda: (ventanaJugadores3.destroy(), sys.exit(0)))
+    ventanaJugadores3.protocol("WM_DELETE_WINDOW", salirEdicion)
     ventana.attributes('-disabled', True)
 
     #Widgets
@@ -503,6 +520,3 @@ def filtarJugador():
 
 def  listaJugadores():
     pass
-
-
-

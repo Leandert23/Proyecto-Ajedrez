@@ -6,7 +6,7 @@ def validarNombre(nombre):
     for letra in nombre:
         if letra == " ":
             continue 
-        if not letra.isalpha():
+        if not letra.isalnum():
             return False
     return True
 
@@ -19,7 +19,7 @@ def validarEntero(entero):
     return True
         
 def validarTexto(texto):
-    if len(texto) > 15:
+    if len(texto) > 20:
         return False
     return True
 
@@ -40,8 +40,6 @@ def validarEntero2(numero):
 def validarEloVictorias(victorias):
     diferencia = 0
     if victorias.strip() == "":
-        return "False"
-    if  victorias == "0":
         return 0
     for i in victorias:
         if i == "+":
@@ -50,6 +48,10 @@ def validarEloVictorias(victorias):
             diferencia += 2
         elif i == "=":
             diferencia += 4
+        elif i == "B":
+            diferencia += 0
+        elif i == "F":
+            diferencia += 0
         else:
             return "False"
     return diferencia
@@ -57,14 +59,14 @@ def validarEloVictorias(victorias):
 def validarEloTablas(tablas):
     diferencia = 0
     if tablas.strip() == "":
-        return "False"
-    if  tablas == "0":
         return 0
     for i in tablas:
         if i == "+":
             diferencia += 2
         elif i == "-":
             diferencia -= 2
+        elif i == "=":
+            diferencia = 0
         else:
             return "False"
     return diferencia
@@ -72,8 +74,6 @@ def validarEloTablas(tablas):
 def validarEloDerrotas(derrotas):
     diferencia = 0
     if derrotas.strip() == "":
-        return "False"
-    if  derrotas == "0":
         return 0
     for i in derrotas:
         if i == "+":
@@ -82,6 +82,44 @@ def validarEloDerrotas(derrotas):
             diferencia -= 2
         elif i == "=":
             diferencia -= 4
+        elif i == "B":
+            diferencia += 0
+        elif i == "F":
+            diferencia += 0
         else:
             return "False"
     return diferencia
+
+def validarDiferenciaVictorias(diferencia, respuesta):
+    if respuesta == "Bye":
+        return "Bye(B)"
+    elif respuesta == "Forfeit":
+        return "Forfeit(+F)"
+    
+    if  diferencia <= -100:
+        return f"{respuesta[0][0]} {respuesta[0][3]} (V+)"
+    elif diferencia >= 100:
+        return f"{respuesta[0][0]} {respuesta[0][3]} (V-)"
+    else:
+        return f"{respuesta[0][0]} {respuesta[0][3]} (V=)"
+
+def validarDiferenciaTablas(diferencia, respuesta):
+    if  diferencia < 0:
+        return f"{respuesta[0][0]} {respuesta[0][3]} (T+)"
+    elif diferencia > 0:
+        return f"{respuesta[0][0]} {respuesta[0][3]} (T-)"
+    else:
+        return f"{respuesta[0][0]} {respuesta[0][3]} (T=)"
+    
+def validarDiferenciaDerrotas(diferencia, respuesta):
+    if respuesta == "Bye":
+        return "Bye(B)"
+    elif respuesta == "Forfeit":
+        return "Forfeit(-F)"
+    
+    if  diferencia >= 100:
+        return f"{respuesta[0][0]} {respuesta[0][3]} (D+)"
+    elif diferencia <= -100:
+        return f"{respuesta[0][0]} {respuesta[0][3]} (D-)"
+    else:
+        return f"{respuesta[0][0]} {respuesta[0][3]} (D=)"

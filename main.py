@@ -32,8 +32,8 @@ botonJugadores = tk.Button(frame, text= "Jugadores", bg="lightgray", command= in
 botonJugadores.pack(padx=20, pady=10, fill=tk.BOTH, expand=True)
 botonDatos = tk.Button(frame, text= "Datos", bg="lightgray", command= interfazDatos, font=("Impact", 20))
 botonDatos.pack(padx=20, pady=(10,20), fill=tk.BOTH, expand=True)
-etiquetaVersion = tk.Label(ventanaMain, text="Versión 1.0", bg="lightgray", font=("Impact", 12))
-etiquetaVersion.pack()
+etiquetaVersion = tk.Label(ventanaMain, text="Versión 2.0", bg="lightgray", font=("Impact", 12))
+etiquetaVersion.pack(side="bottom", pady=30)
 
 baseDatos.crearTablaJugadores()
 baseDatos.crearTablaListaTorneos()
